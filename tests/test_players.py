@@ -1,6 +1,4 @@
 # ruff: noqa: D100, D101, D102, D103
-from __future__ import annotations
-
 import datetime
 import typing
 from unittest import mock
@@ -112,7 +110,9 @@ class TestPlayer:
                 "update_voice_state",
                 new_callable=mock.AsyncMock,
             ) as patched_voice_state,
-            mock.patch.object(new_player.app.event_manager, "wait_for", connect_events),
+            mock.patch.object(
+                new_player.app.event_manager, "wait_for", connect_events
+            ),
             mock.patch(
                 "ongaku.rest.RESTClient.update_player",
                 new_callable=mock.AsyncMock,
@@ -190,7 +190,9 @@ class TestPlayer:
                 "update_voice_state",
                 new_callable=mock.AsyncMock,
             ) as patched_voice_state,
-            mock.patch.object(new_player.app.event_manager, "wait_for", connect_events),
+            mock.patch.object(
+                new_player.app.event_manager, "wait_for", connect_events
+            ),
             mock.patch(
                 "ongaku.rest.RESTClient.update_player",
             ) as patched_update,
@@ -245,7 +247,9 @@ class TestPlayer:
             mock.patch.object(
                 new_player,
                 "_channel_id",
-                new_callable=mock.PropertyMock(return_value=Snowflake(987654321)),
+                new_callable=mock.PropertyMock(
+                    return_value=Snowflake(987654321)
+                ),
             ),
             mock.patch(
                 "ongaku.rest.RESTClient.update_player",
@@ -311,7 +315,9 @@ class TestPlayer:
             mock.patch.object(
                 new_player,
                 "_channel_id",
-                new_callable=mock.PropertyMock(return_value=Snowflake(987654321)),
+                new_callable=mock.PropertyMock(
+                    return_value=Snowflake(987654321)
+                ),
             ),
             pytest.raises(errors.PlayerQueueError),
         ):
@@ -629,7 +635,10 @@ class TestPlayer:
                 ),
             ) as patched_update,
         ):
-            tracks: list[Track] = [ongaku_track, mock.Mock(encoded="test_track_2")]
+            tracks: list[Track] = [
+                ongaku_track,
+                mock.Mock(encoded="test_track_2"),
+            ]
 
             new_player.add(tracks)
 
@@ -737,7 +746,9 @@ class TestPlayer:
             await new_player.set_volume(9001)
 
     @pytest.mark.asyncio
-    async def test_set_position(self, ongaku_session: Session, ongaku_track: Track):
+    async def test_set_position(
+        self, ongaku_session: Session, ongaku_track: Track
+    ):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
         with (
@@ -944,7 +955,9 @@ class TestPlayer:
             )
 
     @pytest.mark.asyncio
-    async def test_update(self, ongaku_session: Session, ongaku_filters: Filters):
+    async def test_update(
+        self, ongaku_session: Session, ongaku_filters: Filters
+    ):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
         assert new_player.volume == -1

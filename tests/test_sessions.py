@@ -1,6 +1,4 @@
 # ruff: noqa: D100, D101, D102, D103
-from __future__ import annotations
-
 import asyncio
 import datetime
 import typing
@@ -120,7 +118,9 @@ class TestSession:
         handler.players = tuple(session._players.values())
 
         with (
-            mock.patch.object(handler, "fetch_session", return_value=new_session),
+            mock.patch.object(
+                handler, "fetch_session", return_value=new_session
+            ),
             mock.patch(
                 "ongaku.player.Player.transfer",
             ) as patched_player_transfer,
@@ -183,7 +183,9 @@ class TestSession:
 
         with (
             mock.patch.object(gateway_bot, "get_me", return_value=bot_user),
-            mock.patch("ongaku.client.Client._get_client_session", return_value=client),
+            mock.patch(
+                "ongaku.client.Client._get_client_session", return_value=client
+            ),
             mock.patch.object(
                 session,
                 "_base_uri",
@@ -213,7 +215,9 @@ class TestSession:
 
             assert isinstance(first_event_args[0], events.ReadyEvent)
 
-            patched_transfer.assert_called_once_with(ongaku_client.session_handler)
+            patched_transfer.assert_called_once_with(
+                ongaku_client.session_handler
+            )
 
     @pytest.mark.asyncio
     async def test_start(self, ongaku_client: Client):
@@ -633,7 +637,9 @@ class TestRequest:
         ):
             # Test extra headers
 
-            response = await session.request("GET", "/headers", None, headers=test_dict)
+            response = await session.request(
+                "GET", "/headers", None, headers=test_dict
+            )
 
             headers = dict(test_dict)
 
@@ -651,7 +657,9 @@ class TestRequest:
 
             # Test json payload.
 
-            response = await session.request("GET", "/json", None, json=test_dict)
+            response = await session.request(
+                "GET", "/json", None, json=test_dict
+            )
 
             patched_request.assert_called_with(
                 "GET",
@@ -665,7 +673,9 @@ class TestRequest:
 
             # Test extra params
 
-            response = await session.request("GET", "/params", None, params=test_dict)
+            response = await session.request(
+                "GET", "/params", None, params=test_dict
+            )
 
             params = dict(test_dict)
 
@@ -748,7 +758,9 @@ class TestRequest:
                 return_value=mock.AsyncMock(
                     status=400,
                     reason="reason",
-                    text=mock.AsyncMock(return_value="not a rest error payload"),
+                    text=mock.AsyncMock(
+                        return_value="not a rest error payload"
+                    ),
                 ),
             ),
             pytest.raises(errors.RestStatusError) as rest_status_error_2,
@@ -772,7 +784,9 @@ class TestRequest:
                     status=400,
                     reason="reason",
                     text=mock.AsyncMock(
-                        return_value=orjson.dumps(payloads.REST_ERROR_PAYLOAD).decode(),
+                        return_value=orjson.dumps(
+                            payloads.REST_ERROR_PAYLOAD
+                        ).decode(),
                     ),
                 ),
             ),
@@ -782,9 +796,12 @@ class TestRequest:
 
         assert isinstance(rest_error_error.value, errors.RestRequestError)
 
-        assert rest_error_error.value.timestamp == datetime.datetime.fromtimestamp(
-            1 / 1000,
-            datetime.timezone.utc,
+        assert (
+            rest_error_error.value.timestamp
+            == datetime.datetime.fromtimestamp(
+                1 / 1000,
+                datetime.timezone.utc,
+            )
         )
         assert rest_error_error.value.status == 2
         assert rest_error_error.value.error == "error"
@@ -827,7 +844,9 @@ class TestHandleOPCode:
             3,
         )
 
-        event = session._handle_op_code(orjson.dumps(payloads.READY_PAYLOAD).decode())
+        event = session._handle_op_code(
+            orjson.dumps(payloads.READY_PAYLOAD).decode()
+        )
 
         assert isinstance(event, events.ReadyEvent)
 

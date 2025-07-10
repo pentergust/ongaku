@@ -1,6 +1,4 @@
 # ruff: noqa: D100, D101, D102, D103
-from __future__ import annotations
-
 import datetime
 import typing
 
@@ -47,7 +45,9 @@ class TestBuilderErrors:
         assert parsed_result.trace == "trace"
 
     def test_build_exception_error(self, builder: EntityBuilder):
-        parsed_result = builder.build_exception_error(payloads.EXCEPTION_ERROR_PAYLOAD)
+        parsed_result = builder.build_exception_error(
+            payloads.EXCEPTION_ERROR_PAYLOAD
+        )
 
         assert parsed_result.message == "message"
         assert parsed_result.severity == SeverityType.COMMON
@@ -55,7 +55,9 @@ class TestBuilderErrors:
 
 
 class TestBuilderEvents:
-    def test_build_ready_event(self, ongaku_session: Session, builder: EntityBuilder):
+    def test_build_ready_event(
+        self, ongaku_session: Session, builder: EntityBuilder
+    ):
         parsed_result = builder.build_ready_event(
             payloads.READY_PAYLOAD,
             ongaku_session,
@@ -120,7 +122,9 @@ class TestBuilderEvents:
         assert parsed_result.app == ongaku_session.app
         assert isinstance(parsed_result.guild_id, hikari.Snowflake)
         assert parsed_result.guild_id == hikari.Snowflake(1234567890)
-        assert parsed_result.track == builder.build_track(payloads.TRACK_PAYLOAD)
+        assert parsed_result.track == builder.build_track(
+            payloads.TRACK_PAYLOAD
+        )
 
     def test_build_track_end_event(
         self,
@@ -137,7 +141,9 @@ class TestBuilderEvents:
         assert parsed_result.app == ongaku_session.app
         assert isinstance(parsed_result.guild_id, hikari.Snowflake)
         assert parsed_result.guild_id == hikari.Snowflake(1234567890)
-        assert parsed_result.track == builder.build_track(payloads.TRACK_PAYLOAD)
+        assert parsed_result.track == builder.build_track(
+            payloads.TRACK_PAYLOAD
+        )
         assert parsed_result.reason == TrackEndReasonType.FINISHED
 
     def test_build_track_exception_event(
@@ -155,7 +161,9 @@ class TestBuilderEvents:
         assert parsed_result.app == ongaku_session.app
         assert isinstance(parsed_result.guild_id, hikari.Snowflake)
         assert parsed_result.guild_id == hikari.Snowflake(1234567890)
-        assert parsed_result.track == builder.build_track(payloads.TRACK_PAYLOAD)
+        assert parsed_result.track == builder.build_track(
+            payloads.TRACK_PAYLOAD
+        )
         assert parsed_result.exception == builder.build_exception_error(
             payloads.EXCEPTION_ERROR_PAYLOAD,
         )
@@ -175,7 +183,9 @@ class TestBuilderEvents:
         assert parsed_result.app == ongaku_session.app
         assert isinstance(parsed_result.guild_id, hikari.Snowflake)
         assert parsed_result.guild_id == hikari.Snowflake(1234567890)
-        assert parsed_result.track == builder.build_track(payloads.TRACK_PAYLOAD)
+        assert parsed_result.track == builder.build_track(
+            payloads.TRACK_PAYLOAD
+        )
         assert parsed_result.threshold_ms == 1
 
 
@@ -221,7 +231,9 @@ class TestBuildFilters:
         assert parsed_result.gain == 0.95
 
     def test_build_filters_karaoke(self, builder: EntityBuilder):
-        parsed_result = builder.build_filters_karaoke(payloads.FILTERS_KARAOKE_PAYLOAD)
+        parsed_result = builder.build_filters_karaoke(
+            payloads.FILTERS_KARAOKE_PAYLOAD
+        )
 
         assert parsed_result.level == 1
         assert parsed_result.mono_level == 0.5
@@ -238,13 +250,17 @@ class TestBuildFilters:
         assert parsed_result.rate == 4
 
     def test_build_filters_tremolo(self, builder: EntityBuilder):
-        parsed_result = builder.build_filters_tremolo(payloads.FILTERS_TREMOLO_PAYLOAD)
+        parsed_result = builder.build_filters_tremolo(
+            payloads.FILTERS_TREMOLO_PAYLOAD
+        )
 
         assert parsed_result.frequency == 1.2
         assert parsed_result.depth == 1
 
     def test_build_filters_vibrato(self, builder: EntityBuilder):
-        parsed_result = builder.build_filters_vibrato(payloads.FILTERS_VIBRATO_PAYLOAD)
+        parsed_result = builder.build_filters_vibrato(
+            payloads.FILTERS_VIBRATO_PAYLOAD
+        )
 
         assert parsed_result.frequency == 3
         assert parsed_result.depth == 0.5
@@ -299,17 +315,24 @@ class TestBuilderInfo:
             1 / 1000,
             datetime.timezone.utc,
         )
-        assert parsed_result.git == builder.build_info_git(payloads.INFO_GIT_PAYLOAD)
+        assert parsed_result.git == builder.build_info_git(
+            payloads.INFO_GIT_PAYLOAD
+        )
         assert parsed_result.jvm == "jvm"
         assert parsed_result.lavaplayer == "lavaplayer"
-        assert parsed_result.source_managers == ["source_manager_1", "source_manager_2"]
+        assert parsed_result.source_managers == [
+            "source_manager_1",
+            "source_manager_2",
+        ]
         assert parsed_result.filters == ["filter_1", "filter_2"]
         assert parsed_result.plugins == [
             builder.build_info_plugin(payloads.INFO_PLUGIN_PAYLOAD),
         ]
 
     def test_build_info_version(self, builder: EntityBuilder):
-        parsed_result = builder.build_info_version(payloads.INFO_VERSION_PAYLOAD)
+        parsed_result = builder.build_info_version(
+            payloads.INFO_VERSION_PAYLOAD
+        )
 
         assert parsed_result.semver == "semver"
         assert parsed_result.major == 1
@@ -341,7 +364,9 @@ class TestBuilderPlayer:
 
         assert isinstance(parsed_result.guild_id, hikari.Snowflake)
         assert parsed_result.guild_id == hikari.Snowflake(1234567890)
-        assert parsed_result.track == builder.build_track(payloads.TRACK_PAYLOAD)
+        assert parsed_result.track == builder.build_track(
+            payloads.TRACK_PAYLOAD
+        )
         assert parsed_result.volume == 1
         assert parsed_result.is_paused is True
         assert parsed_result.state == builder.build_player_state(
@@ -353,7 +378,9 @@ class TestBuilderPlayer:
         assert parsed_result.filters is None
 
     def test_build_player_state(self, builder: EntityBuilder):
-        parsed_result = builder.build_player_state(payloads.PLAYER_STATE_PAYLOAD)
+        parsed_result = builder.build_player_state(
+            payloads.PLAYER_STATE_PAYLOAD
+        )
 
         assert parsed_result.time == datetime.datetime.fromtimestamp(
             1 / 1000,
@@ -364,7 +391,9 @@ class TestBuilderPlayer:
         assert parsed_result.ping == 3
 
     def test_build_player_voice(self, builder: EntityBuilder):
-        parsed_result = builder.build_player_voice(payloads.PLAYER_VOICE_PAYLOAD)
+        parsed_result = builder.build_player_voice(
+            payloads.PLAYER_VOICE_PAYLOAD
+        )
 
         assert parsed_result.token == "token"
         assert parsed_result.endpoint == "endpoint"
@@ -381,10 +410,14 @@ class TestBuilderPlaylist:
         assert parsed_result.plugin_info == {}
         assert isinstance(parsed_result.tracks, typing.Sequence)
         assert len(parsed_result.tracks) == 1
-        assert parsed_result.tracks[0] == builder.build_track(payloads.TRACK_PAYLOAD)
+        assert parsed_result.tracks[0] == builder.build_track(
+            payloads.TRACK_PAYLOAD
+        )
 
     def test_build_playlist_info(self, builder: EntityBuilder):
-        parsed_result = builder.build_playlist_info(payloads.PLAYLIST_INFO_PAYLOAD)
+        parsed_result = builder.build_playlist_info(
+            payloads.PLAYLIST_INFO_PAYLOAD
+        )
 
         assert parsed_result.name == "name"
         assert parsed_result.selected_track == 1
@@ -464,8 +497,11 @@ class TestBuilderStatistics:
         assert parsed_result.cpu == builder.build_statistics_cpu(
             payloads.STATISTICS_CPU_PAYLOAD,
         )
-        assert parsed_result.frame_stats == builder.build_statistics_frame_statistics(
-            payloads.STATISTICS_FRAME_STATS_PAYLOAD,
+        assert (
+            parsed_result.frame_stats
+            == builder.build_statistics_frame_statistics(
+                payloads.STATISTICS_FRAME_STATS_PAYLOAD,
+            )
         )
 
     def test_build_statistics_memory(self, builder: EntityBuilder):
@@ -479,7 +515,9 @@ class TestBuilderStatistics:
         assert parsed_result.reservable == 4
 
     def test_build_statistics_cpu(self, builder: EntityBuilder):
-        parsed_result = builder.build_statistics_cpu(payloads.STATISTICS_CPU_PAYLOAD)
+        parsed_result = builder.build_statistics_cpu(
+            payloads.STATISTICS_CPU_PAYLOAD
+        )
 
         assert parsed_result.cores == 1
         assert parsed_result.system_load == 2.3

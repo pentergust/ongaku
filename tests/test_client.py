@@ -1,6 +1,4 @@
 # ruff: noqa: D100, D101, D102, D103
-from __future__ import annotations
-
 from typing import TYPE_CHECKING
 from unittest import mock
 
@@ -46,7 +44,9 @@ class TestClient:
         ) as patched_injection_hook:
             client = Client.from_arc(command_client)
 
-            patched_injection_hook.assert_called_once_with(client._arc_player_injector)
+            patched_injection_hook.assert_called_once_with(
+                client._arc_player_injector
+            )
 
     def test_from_tanjun(self, gateway_bot: gateway_bot_.GatewayBot):
         command_client = TanjunClient.from_gateway_bot(gateway_bot)
@@ -73,7 +73,9 @@ class TestClient:
         assert isinstance(client.session_handler, SessionHandler)
 
     @pytest.mark.asyncio
-    async def test_get_client_session(self, gateway_bot: gateway_bot_.GatewayBot):
+    async def test_get_client_session(
+        self, gateway_bot: gateway_bot_.GatewayBot
+    ):
         client = Client(gateway_bot)
 
         assert isinstance(client._get_client_session(), ClientSession)

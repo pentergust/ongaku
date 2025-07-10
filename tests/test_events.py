@@ -1,6 +1,4 @@
 # ruff: noqa: D100, D101, D102, D103
-from __future__ import annotations
-
 import datetime
 from typing import TYPE_CHECKING
 
@@ -79,7 +77,9 @@ class TestReadyEvent:
         ongaku_client: Client,
         ongaku_session: Session,
     ):
-        event = events.ReadyEvent.from_session(ongaku_session, False, "session_id")
+        event = events.ReadyEvent.from_session(
+            ongaku_session, False, "session_id"
+        )
 
         assert event.app == gateway_bot
         assert event.client == ongaku_client
@@ -268,7 +268,9 @@ class TestTrackEndEvent:
 
 class TestTrackException:
     def test_event(self):
-        exception = events.TrackException("message", SeverityType.COMMON, "cause")
+        exception = events.TrackException(
+            "message", SeverityType.COMMON, "cause"
+        )
 
         assert exception.message == "message"
         assert exception.severity == SeverityType.COMMON
@@ -283,7 +285,9 @@ class TestTrackExceptionEvent:
         ongaku_session: Session,
         ongaku_track: Track,
     ):
-        exception = events.TrackException("message", SeverityType.COMMON, "cause")
+        exception = events.TrackException(
+            "message", SeverityType.COMMON, "cause"
+        )
         event = events.TrackExceptionEvent(
             gateway_bot,
             ongaku_client,
@@ -307,7 +311,9 @@ class TestTrackExceptionEvent:
         ongaku_session: Session,
         ongaku_track: Track,
     ):
-        exception = events.TrackException("message", SeverityType.COMMON, "cause")
+        exception = events.TrackException(
+            "message", SeverityType.COMMON, "cause"
+        )
         event = events.TrackExceptionEvent.from_session(
             ongaku_session,
             hikari.Snowflake(1234567890),

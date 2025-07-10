@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import typing
 
 PayloadT: typing.TypeAlias = typing.Final[typing.Mapping[str, typing.Any]]
@@ -168,7 +166,11 @@ EXCEPTION_ERROR_PAYLOAD: PayloadT = {
     "cause": "cause",
 }
 
-READY_PAYLOAD: PayloadT = {"op": "ready", "resumed": False, "sessionId": "session_id"}
+READY_PAYLOAD: PayloadT = {
+    "op": "ready",
+    "resumed": False,
+    "sessionId": "session_id",
+}
 
 PLAYER_UPDATE_PAYLOAD: PayloadT = {
     "op": "playerUpdate",
@@ -225,7 +227,11 @@ INFO_VERSION_PAYLOAD: PayloadT = {
     "build": "build",
 }
 
-INFO_GIT_PAYLOAD: PayloadT = {"branch": "branch", "commit": "commit", "commitTime": 1}
+INFO_GIT_PAYLOAD: PayloadT = {
+    "branch": "branch",
+    "commit": "commit",
+    "commitTime": 1,
+}
 
 INFO_PLUGIN_PAYLOAD: PayloadT = {"name": "name", "version": "version"}
 
@@ -254,7 +260,10 @@ ROUTEPLANNER_FAILING_ADDRESS_PAYLOAD: PayloadT = {
     "failingTime": "failing_time",
 }
 
-ROUTEPLANNER_IP_BLOCK_PAYLOAD: PayloadT = {"type": "Inet4Address", "size": "size"}
+ROUTEPLANNER_IP_BLOCK_PAYLOAD: PayloadT = {
+    "type": "Inet4Address",
+    "size": "size",
+}
 
 ROUTEPLANNER_DETAILS_PAYLOAD: PayloadT = {
     "ipBlock": ROUTEPLANNER_IP_BLOCK_PAYLOAD,
@@ -280,9 +289,17 @@ STATISTICS_MEMORY_PAYLOAD: PayloadT = {
     "reservable": 4,
 }
 
-STATISTICS_CPU_PAYLOAD: PayloadT = {"cores": 1, "systemLoad": 2.3, "lavalinkLoad": 4.5}
+STATISTICS_CPU_PAYLOAD: PayloadT = {
+    "cores": 1,
+    "systemLoad": 2.3,
+    "lavalinkLoad": 4.5,
+}
 
-STATISTICS_FRAME_STATS_PAYLOAD: PayloadT = {"sent": 1, "nulled": 2, "deficit": 3}
+STATISTICS_FRAME_STATS_PAYLOAD: PayloadT = {
+    "sent": 1,
+    "nulled": 2,
+    "deficit": 3,
+}
 
 STATISTICS_PAYLOAD: PayloadT = {
     "players": 1,

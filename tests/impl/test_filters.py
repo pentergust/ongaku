@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import pytest
 
 from ongaku.abc.filters import BandType
@@ -16,7 +14,10 @@ from ongaku.impl.filters import Vibrato
 
 
 def test_filters():
-    equalizer = [Equalizer(BandType.HZ100, 0.95), Equalizer(BandType.HZ63, -0.1)]
+    equalizer = [
+        Equalizer(BandType.HZ100, 0.95),
+        Equalizer(BandType.HZ63, -0.1),
+    ]
     karaoke = Karaoke(1, 0.5, 4.5, 6)
     timescale = Timescale(1.2, 2.3, 4)
     tremolo = Tremolo(1.2, 1)
@@ -116,7 +117,9 @@ class TestFilterFunctions:
     def test_set_karaoke(self):
         filters = Filters()
 
-        filters.set_karaoke(level=0.1, mono_level=1.0, filter_band=0.5, filter_width=2)
+        filters.set_karaoke(
+            level=0.1, mono_level=1.0, filter_band=0.5, filter_width=2
+        )
 
         assert filters.karaoke is not None
 
@@ -128,7 +131,9 @@ class TestFilterFunctions:
     def test_clear_karaoke(self):
         filters = Filters()
 
-        filters.set_karaoke(level=0.1, mono_level=1.0, filter_band=0.5, filter_width=2)
+        filters.set_karaoke(
+            level=0.1, mono_level=1.0, filter_band=0.5, filter_width=2
+        )
 
         assert filters.karaoke is not None
 
