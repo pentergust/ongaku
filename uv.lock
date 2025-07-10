@@ -730,21 +730,11 @@ wheels = [
 
 [[package]]
 name = "hikari-ongaku"
+version = "1.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
     { name = "hikari" },
-]
-
-[package.optional-dependencies]
-injection = [
-    { name = "hikari-arc" },
-    { name = "hikari-tanjun", version = "2.17.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "hikari-tanjun", version = "2.17.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-]
-speedups = [
-    { name = "aiohttp", extra = ["speedups"] },
-    { name = "orjson" },
 ]
 
 [package.dev-dependencies]
@@ -771,6 +761,15 @@ doc = [
 format = [
     { name = "ruff" },
 ]
+injection = [
+    { name = "hikari-arc" },
+    { name = "hikari-tanjun", version = "2.17.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "hikari-tanjun", version = "2.17.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+speedups = [
+    { name = "aiohttp", extra = ["speedups"] },
+    { name = "orjson" },
+]
 test = [
     { name = "mock" },
     { name = "orjson" },
@@ -782,13 +781,8 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.11.0" },
-    { name = "aiohttp", extras = ["speedups"], marker = "extra == 'speedups'", specifier = "~=3.11.0" },
     { name = "hikari", specifier = ">=2.3.3" },
-    { name = "hikari-arc", marker = "extra == 'injection'", specifier = "~=2.1" },
-    { name = "hikari-tanjun", marker = "extra == 'injection'", specifier = "~=2.17.0" },
-    { name = "orjson", marker = "extra == 'speedups'", specifier = "~=3.10.0" },
 ]
-provides-extras = ["speedups", "injection"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "nox", extras = ["uv"], specifier = ">=2025.5.0" }]
@@ -810,6 +804,14 @@ doc = [
     { name = "pyyaml-env-tag", specifier = ">=1.0.0" },
 ]
 format = [{ name = "ruff", specifier = ">=0.11.0" }]
+injection = [
+    { name = "hikari-arc", specifier = "~=2.1" },
+    { name = "hikari-tanjun", specifier = "~=2.17.0" },
+]
+speedups = [
+    { name = "aiohttp", extras = ["speedups"], specifier = "~=3.11.0" },
+    { name = "orjson", specifier = "~=3.10.0" },
+]
 test = [
     { name = "mock", specifier = ">=5.1.0" },
     { name = "orjson", specifier = ">=3.10.0" },
