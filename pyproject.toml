@@ -61,9 +61,14 @@ reportShadowedImports = "warning"
 
 [tool.ruff]
 extend-exclude = ["examples/*", ".venv/*"]
+line-length = 80
 
 [tool.ruff.format]
 docstring-code-format = true
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.ruff.lint.isort]
 force-single-line = true
