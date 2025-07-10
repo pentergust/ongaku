@@ -3,8 +3,6 @@
 The builder, to convert most abstract classes from a payload.
 """
 
-from __future__ import annotations
-
 import datetime
 import typing
 
@@ -98,7 +96,9 @@ class EntityBuilder:
 
     # errors
 
-    def build_rest_error(self, payload: types.PayloadMappingT) -> RestRequestError:
+    def build_rest_error(
+        self, payload: types.PayloadMappingT
+    ) -> RestRequestError:
         """Build Rest Request Error.
 
         Builds a [`RestRequestError`][ongaku.errors.RestRequestError] object, from a payload.
@@ -163,7 +163,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into ExceptionError")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into ExceptionError"
+        )
 
         return RestExceptionError(
             data.get("message", None),
@@ -241,7 +243,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into PlayerUpdate")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into PlayerUpdate"
+        )
 
         return events.PlayerUpdateEvent.from_session(
             session,
@@ -429,7 +433,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into TrackException")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into TrackException"
+        )
 
         return events.TrackExceptionEvent.from_session(
             session,
@@ -507,7 +513,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into WebsocketClosed")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into WebsocketClosed"
+        )
 
         return events.WebsocketClosedEvent.from_session(
             session,
@@ -566,14 +574,20 @@ class EntityBuilder:
     ) -> filters_.Equalizer:
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Filters Equalizer")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Filters Equalizer"
+        )
 
         return filters.Equalizer(filters_.BandType(data["band"]), data["gain"])
 
-    def build_filters_karaoke(self, payload: types.PayloadMappingT) -> filters_.Karaoke:
+    def build_filters_karaoke(
+        self, payload: types.PayloadMappingT
+    ) -> filters_.Karaoke:
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Filters Karaoke")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Filters Karaoke"
+        )
 
         return filters.Karaoke(
             data.get("level", None),
@@ -588,7 +602,9 @@ class EntityBuilder:
     ) -> filters_.Timescale:
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Filters Timescale")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Filters Timescale"
+        )
 
         return filters.Timescale(
             data.get("speed", None),
@@ -596,20 +612,28 @@ class EntityBuilder:
             data.get("rate", None),
         )
 
-    def build_filters_tremolo(self, payload: types.PayloadMappingT) -> filters_.Tremolo:
+    def build_filters_tremolo(
+        self, payload: types.PayloadMappingT
+    ) -> filters_.Tremolo:
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Filters Tremolo")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Filters Tremolo"
+        )
 
         return filters.Tremolo(
             data.get("frequency", None),
             data.get("depth", None),
         )
 
-    def build_filters_vibrato(self, payload: types.PayloadMappingT) -> filters_.Vibrato:
+    def build_filters_vibrato(
+        self, payload: types.PayloadMappingT
+    ) -> filters_.Vibrato:
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Filters Vibrato")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Filters Vibrato"
+        )
 
         return filters.Vibrato(
             data.get("frequency", None),
@@ -622,7 +646,9 @@ class EntityBuilder:
     ) -> filters_.Rotation:
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Filters Rotation")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Filters Rotation"
+        )
 
         return filters.Rotation(
             data.get("rotationHz", None),
@@ -634,7 +660,9 @@ class EntityBuilder:
     ) -> filters_.Distortion:
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Filters Distortion")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Filters Distortion"
+        )
 
         return filters.Distortion(
             data.get("sinOffset", None),
@@ -653,7 +681,9 @@ class EntityBuilder:
     ) -> filters_.ChannelMix:
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Filters ChannelMix")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Filters ChannelMix"
+        )
 
         return filters.ChannelMix(
             data.get("leftToLeft", None),
@@ -668,7 +698,9 @@ class EntityBuilder:
     ) -> filters_.LowPass:
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Filters LowPass")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Filters LowPass"
+        )
 
         return filters.LowPass(
             data.get("smoothing", None),
@@ -731,7 +763,9 @@ class EntityBuilder:
             plugins,
         )
 
-    def build_info_version(self, payload: types.PayloadMappingT) -> info_.Version:
+    def build_info_version(
+        self, payload: types.PayloadMappingT
+    ) -> info_.Version:
         """Build Version Information.
 
         Builds a [`Version`][ongaku.abc.info.Version] object, from a payload.
@@ -793,7 +827,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Information Git")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Information Git"
+        )
 
         return info.Git(
             data["branch"],
@@ -828,7 +864,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Information Plugin")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Information Plugin"
+        )
 
         return info.Plugin(data["name"], data["version"])
 
@@ -862,15 +900,21 @@ class EntityBuilder:
 
         return player.Player(
             hikari.Snowflake(int(data["guildId"])),
-            self.build_track(data["track"]) if data.get("track", None) else None,
+            self.build_track(data["track"])
+            if data.get("track", None)
+            else None,
             data["volume"],
             data["paused"],
             self.build_player_state(data["state"]),
             self.build_player_voice(data["voice"]),
-            self.build_filters(data["filters"]) if data.get("filters", False) else None,
+            self.build_filters(data["filters"])
+            if data.get("filters", False)
+            else None,
         )
 
-    def build_player_state(self, payload: types.PayloadMappingT) -> player_.State:
+    def build_player_state(
+        self, payload: types.PayloadMappingT
+    ) -> player_.State:
         """Build Player State.
 
         Builds a [`State`][ongaku.abc.player.State] object, from a payload.
@@ -894,7 +938,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Player State")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Player State"
+        )
 
         return player.State(
             datetime.datetime.fromtimestamp(
@@ -906,7 +952,9 @@ class EntityBuilder:
             data["ping"],
         )
 
-    def build_player_voice(self, payload: types.PayloadMappingT) -> player_.Voice:
+    def build_player_voice(
+        self, payload: types.PayloadMappingT
+    ) -> player_.Voice:
         """Build Player Voice.
 
         Builds a [`Voice`][ongaku.abc.player.Voice] object, from a payload.
@@ -930,13 +978,17 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Player Voice")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Player Voice"
+        )
 
         return player.Voice(data["token"], data["endpoint"], data["sessionId"])
 
     # playlist
 
-    def build_playlist(self, payload: types.PayloadMappingT) -> playlist_.Playlist:
+    def build_playlist(
+        self, payload: types.PayloadMappingT
+    ) -> playlist_.Playlist:
         """Build Playlist.
 
         Builds a [`Playlist`][ongaku.abc.playlist.Playlist] object, from a payload.
@@ -1000,7 +1052,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Playlist Info")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Playlist Info"
+        )
 
         return playlist.PlaylistInfo(data["name"], data["selectedTrack"])
 
@@ -1033,7 +1087,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into RoutePlannerStatus")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into RoutePlannerStatus"
+        )
 
         return routeplanner.RoutePlannerStatus(
             routeplanner_.RoutePlannerType(data["class"]),
@@ -1150,7 +1206,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into FailingAddress")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into FailingAddress"
+        )
 
         return routeplanner.FailingAddress(
             data["failingAddress"],
@@ -1260,7 +1318,9 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Statistics Memory")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Statistics Memory"
+        )
 
         return statistics.Memory(
             data["free"],
@@ -1269,7 +1329,9 @@ class EntityBuilder:
             data["reservable"],
         )
 
-    def build_statistics_cpu(self, payload: types.PayloadMappingT) -> statistics_.Cpu:
+    def build_statistics_cpu(
+        self, payload: types.PayloadMappingT
+    ) -> statistics_.Cpu:
         """Build Cpu Statistics.
 
         Builds a [`Cpu`][ongaku.abc.statistics.Cpu] object, from a payload.
@@ -1293,9 +1355,13 @@ class EntityBuilder:
         """
         data = self._ensure_mapping(payload)
 
-        _logger.log(TRACE_LEVEL, f"Decoding payload: {payload} into Statistics Cpu")
+        _logger.log(
+            TRACE_LEVEL, f"Decoding payload: {payload} into Statistics Cpu"
+        )
 
-        return statistics.Cpu(data["cores"], data["systemLoad"], data["lavalinkLoad"])
+        return statistics.Cpu(
+            data["cores"], data["systemLoad"], data["lavalinkLoad"]
+        )
 
     def build_statistics_frame_statistics(
         self,
@@ -1329,7 +1395,9 @@ class EntityBuilder:
             f"Decoding payload: {payload} into Statistics FrameStatistics",
         )
 
-        return statistics.FrameStatistics(data["sent"], data["nulled"], data["deficit"])
+        return statistics.FrameStatistics(
+            data["sent"], data["nulled"], data["deficit"]
+        )
 
     # track
 
@@ -1373,7 +1441,9 @@ class EntityBuilder:
             hikari.Snowflake(requestor) if requestor else None,
         )
 
-    def build_track_info(self, payload: types.PayloadMappingT) -> track_.TrackInfo:
+    def build_track_info(
+        self, payload: types.PayloadMappingT
+    ) -> track_.TrackInfo:
         """Build Track Information.
 
         Builds a [`TrackInformation`][ongaku.abc.track.TrackInfo] object, from a payload.
@@ -1412,26 +1482,3 @@ class EntityBuilder:
             data.get("artworkUrl", None),
             data.get("isrc", None),
         )
-
-
-# MIT License
-
-# Copyright (c) 2023-present MPlatypus
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.

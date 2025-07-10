@@ -1,10 +1,7 @@
-"""
-Rest client.
+"""Rest client.
 
 All REST based actions, happen in here.
 """
-
-from __future__ import annotations
 
 import typing
 
@@ -134,7 +131,9 @@ class RESTClient:
             _logger.log(TRACE_LEVEL, "loadType caused an error.")
 
             raise errors.RestExceptionError.from_error(
-                self._client.entity_builder.build_exception_error(response["data"]),
+                self._client.entity_builder.build_exception_error(
+                    response["data"]
+                ),
             )
 
         if load_type == "search":
@@ -142,7 +141,9 @@ class RESTClient:
             tracks: typing.Sequence[Track] = []
             for track in response["data"]:
                 try:
-                    tracks.append(self._client.entity_builder.build_track(track))
+                    tracks.append(
+                        self._client.entity_builder.build_track(track)
+                    )
                 except Exception as e:
                     raise errors.BuildError(e)
 
@@ -151,14 +152,18 @@ class RESTClient:
         elif load_type == "track":
             _logger.log(TRACE_LEVEL, "loadType was a track link.")
             try:
-                build = self._client.entity_builder.build_track(response["data"])
+                build = self._client.entity_builder.build_track(
+                    response["data"]
+                )
             except Exception as e:
                 raise errors.BuildError(e)
 
         elif load_type == "playlist":
             _logger.log(TRACE_LEVEL, "loadType was a playlist link.")
             try:
-                build = self._client.entity_builder.build_playlist(response["data"])
+                build = self._client.entity_builder.build_playlist(
+                    response["data"]
+                )
             except Exception as e:
                 raise errors.BuildError(e)
 
@@ -314,7 +319,9 @@ class RESTClient:
 
         for track in response:
             try:
-                new_tracks.append(self._client.entity_builder.build_track(track))
+                new_tracks.append(
+                    self._client.entity_builder.build_track(track)
+                )
             except Exception as e:
                 raise errors.BuildError(e)
 
@@ -456,7 +463,9 @@ class RESTClient:
 
         response = await session.request(
             route.method,
-            route.path.format(session_id=session_id, guild_id=hikari.Snowflake(guild)),
+            route.path.format(
+                session_id=session_id, guild_id=hikari.Snowflake(guild)
+            ),
             dict,
         )
 
@@ -605,7 +614,9 @@ class RESTClient:
 
                 print(filters.plugin_filters)
                 if len(filters.plugin_filters.items()) > 0:
-                    filters_payload.update({"pluginFilters": filters.plugin_filters})
+                    filters_payload.update(
+                        {"pluginFilters": filters.plugin_filters}
+                    )
 
                 if filters.volume is not None:
                     filters_payload.update({"volume": filters.volume})
@@ -613,7 +624,9 @@ class RESTClient:
                 if filters.equalizer and len(filters.equalizer) > 0:
                     equalizer_list: typing.MutableSequence[typing.Any] = []
                     for eq in filters.equalizer:
-                        equalizer_list.append({"band": eq.band.value, "gain": eq.gain})
+                        equalizer_list.append(
+                            {"band": eq.band.value, "gain": eq.gain}
+                        )
 
                     filters_payload.update({"equalizer": equalizer_list})
 
@@ -638,13 +651,21 @@ class RESTClient:
                         filters_payload.update({"karaoke": karaoke_payload})
 
                 if filters.timescale:
-                    timescale_payload: typing.MutableMapping[str, typing.Any] = {}
+                    timescale_payload: typing.MutableMapping[
+                        str, typing.Any
+                    ] = {}
                     if filters.timescale.speed is not None:
-                        timescale_payload.update({"speed": filters.timescale.speed})
+                        timescale_payload.update(
+                            {"speed": filters.timescale.speed}
+                        )
                     if filters.timescale.pitch is not None:
-                        timescale_payload.update({"pitch": filters.timescale.pitch})
+                        timescale_payload.update(
+                            {"pitch": filters.timescale.pitch}
+                        )
                     if filters.timescale.rate is not None:
-                        timescale_payload.update({"rate": filters.timescale.rate})
+                        timescale_payload.update(
+                            {"rate": filters.timescale.rate}
+                        )
 
                     if len(timescale_payload.items()) > 0:
                         filters_payload.update({"timescale": timescale_payload})
@@ -652,7 +673,9 @@ class RESTClient:
                 if filters.tremolo:
                     tremolo_payload: typing.MutableMapping[str, typing.Any] = {}
                     if filters.tremolo.frequency is not None:
-                        tremolo_payload.update({"frequency": filters.tremolo.frequency})
+                        tremolo_payload.update(
+                            {"frequency": filters.tremolo.frequency}
+                        )
                     if filters.tremolo.depth is not None:
                         tremolo_payload.update({"depth": filters.tremolo.depth})
 
@@ -662,7 +685,9 @@ class RESTClient:
                 if filters.vibrato:
                     vibrato_payload: typing.MutableMapping[str, typing.Any] = {}
                     if filters.vibrato.frequency is not None:
-                        vibrato_payload.update({"frequency": filters.vibrato.frequency})
+                        vibrato_payload.update(
+                            {"frequency": filters.vibrato.frequency}
+                        )
                     if filters.vibrato.depth is not None:
                         vibrato_payload.update({"depth": filters.vibrato.depth})
 
@@ -670,7 +695,9 @@ class RESTClient:
                         filters_payload.update({"vibrato": vibrato_payload})
 
                 if filters.rotation:
-                    rotation_payload: typing.MutableMapping[str, typing.Any] = {}
+                    rotation_payload: typing.MutableMapping[
+                        str, typing.Any
+                    ] = {}
                     if filters.rotation.rotation_hz is not None:
                         rotation_payload.update(
                             {"rotationHz": filters.rotation.rotation_hz},
@@ -680,7 +707,9 @@ class RESTClient:
                         filters_payload.update({"rotation": rotation_payload})
 
                 if filters.distortion:
-                    distortion_payload: typing.MutableMapping[str, typing.Any] = {}
+                    distortion_payload: typing.MutableMapping[
+                        str, typing.Any
+                    ] = {}
                     if filters.distortion.sin_offset is not None:
                         distortion_payload.update(
                             {"sinOffset": filters.distortion.sin_offset},
@@ -706,15 +735,23 @@ class RESTClient:
                             {"tanScale": filters.distortion.tan_scale},
                         )
                     if filters.distortion.offset is not None:
-                        distortion_payload.update({"offset": filters.distortion.offset})
+                        distortion_payload.update(
+                            {"offset": filters.distortion.offset}
+                        )
                     if filters.distortion.scale is not None:
-                        distortion_payload.update({"scale": filters.distortion.scale})
+                        distortion_payload.update(
+                            {"scale": filters.distortion.scale}
+                        )
 
                     if len(distortion_payload.items()) > 0:
-                        filters_payload.update({"distortion": distortion_payload})
+                        filters_payload.update(
+                            {"distortion": distortion_payload}
+                        )
 
                 if filters.channel_mix:
-                    channel_mix_payload: typing.MutableMapping[str, typing.Any] = {}
+                    channel_mix_payload: typing.MutableMapping[
+                        str, typing.Any
+                    ] = {}
                     if filters.channel_mix.left_to_left is not None:
                         channel_mix_payload.update(
                             {"leftToLeft": filters.channel_mix.left_to_left},
@@ -729,14 +766,20 @@ class RESTClient:
                         )
                     if filters.channel_mix.right_to_right is not None:
                         channel_mix_payload.update(
-                            {"rightToRight": filters.channel_mix.right_to_right},
+                            {
+                                "rightToRight": filters.channel_mix.right_to_right
+                            },
                         )
 
                     if len(channel_mix_payload.items()) > 0:
-                        filters_payload.update({"channelMix": channel_mix_payload})
+                        filters_payload.update(
+                            {"channelMix": channel_mix_payload}
+                        )
 
                 if filters.low_pass:
-                    low_pass_payload: typing.MutableMapping[str, typing.Any] = {}
+                    low_pass_payload: typing.MutableMapping[
+                        str, typing.Any
+                    ] = {}
                     if filters.low_pass.smoothing is not None:
                         low_pass_payload.update(
                             {"smoothing": filters.low_pass.smoothing},
@@ -770,7 +813,9 @@ class RESTClient:
 
         response = await session.request(
             route.method,
-            route.path.format(session_id=session_id, guild_id=hikari.Snowflake(guild)),
+            route.path.format(
+                session_id=session_id, guild_id=hikari.Snowflake(guild)
+            ),
             dict,
             headers={"Content-Type": "application/json"},
             json=patch_data,
@@ -834,7 +879,9 @@ class RESTClient:
 
         await session.request(
             route.method,
-            route.path.format(session_id=session_id, guild_id=hikari.Snowflake(guild)),
+            route.path.format(
+                session_id=session_id, guild_id=hikari.Snowflake(guild)
+            ),
             None,
         )
 
@@ -1029,14 +1076,18 @@ class RESTClient:
         if not session:
             session = self._client.session_handler.fetch_session()
 
-        response = await session.request(route.method, route.path, str, version=False)
+        response = await session.request(
+            route.method, route.path, str, version=False
+        )
 
         if response is None:
             raise ValueError("Response is required for this request.")
 
         return response
 
-    async def fetch_stats(self, *, session: Session | None = None) -> Statistics:
+    async def fetch_stats(
+        self, *, session: Session | None = None
+    ) -> Statistics:
         """
         Get statistics.
 
@@ -1219,7 +1270,9 @@ class RESTClient:
         if not session:
             session = self._client.session_handler.fetch_session()
 
-        await session.request(route.method, route.path, None, json={"address": address})
+        await session.request(
+            route.method, route.path, None, json={"address": address}
+        )
 
     async def update_all_routeplanner_addresses(
         self,
@@ -1271,26 +1324,3 @@ class RESTClient:
             route.path,
             None,
         )
-
-
-# MIT License
-
-# Copyright (c) 2023-present MPlatypus
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.

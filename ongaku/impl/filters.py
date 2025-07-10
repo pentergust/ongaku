@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import typing
 
 import hikari
@@ -55,7 +53,9 @@ class Filters(filters_.Filters):
         plugin_filters: typing.Mapping[str, typing.Any] = {},
     ) -> None:
         self._volume = volume
-        self._equalizer: typing.MutableSequence[filters_.Equalizer] = list(equalizer)
+        self._equalizer: typing.MutableSequence[filters_.Equalizer] = list(
+            equalizer
+        )
         self._karaoke = karaoke
         self._timescale = timescale
         self._tremolo = tremolo
@@ -187,7 +187,9 @@ class Filters(filters_.Filters):
 
         self._karaoke = Karaoke(
             self._karaoke.level if level == hikari.UNDEFINED else level,
-            self._karaoke.mono_level if mono_level == hikari.UNDEFINED else mono_level,
+            self._karaoke.mono_level
+            if mono_level == hikari.UNDEFINED
+            else mono_level,
             self._karaoke.filter_band
             if filter_band == hikari.UNDEFINED
             else filter_band,
@@ -270,7 +272,9 @@ class Filters(filters_.Filters):
             self._tremolo = Tremolo(None, None)
 
         self._tremolo = Tremolo(
-            self._tremolo.frequency if frequency == hikari.UNDEFINED else frequency,
+            self._tremolo.frequency
+            if frequency == hikari.UNDEFINED
+            else frequency,
             self._tremolo.depth if depth == hikari.UNDEFINED else depth,
         )
 
@@ -308,7 +312,9 @@ class Filters(filters_.Filters):
             self._vibrato = Vibrato(None, None)
 
         self._vibrato = Vibrato(
-            self._vibrato.frequency if frequency == hikari.UNDEFINED else frequency,
+            self._vibrato.frequency
+            if frequency == hikari.UNDEFINED
+            else frequency,
             self._vibrato.depth if depth == hikari.UNDEFINED else depth,
         )
 
@@ -410,15 +416,21 @@ class Filters(filters_.Filters):
             self._distortion.sin_offset
             if sin_offset == hikari.UNDEFINED
             else sin_offset,
-            self._distortion.sin_scale if sin_scale == hikari.UNDEFINED else sin_scale,
+            self._distortion.sin_scale
+            if sin_scale == hikari.UNDEFINED
+            else sin_scale,
             self._distortion.cos_offset
             if cos_offset == hikari.UNDEFINED
             else cos_offset,
-            self._distortion.cos_scale if cos_scale == hikari.UNDEFINED else cos_scale,
+            self._distortion.cos_scale
+            if cos_scale == hikari.UNDEFINED
+            else cos_scale,
             self._distortion.tan_offset
             if tan_offset == hikari.UNDEFINED
             else tan_offset,
-            self._distortion.tan_scale if tan_scale == hikari.UNDEFINED else tan_scale,
+            self._distortion.tan_scale
+            if tan_scale == hikari.UNDEFINED
+            else tan_scale,
             self._distortion.offset if offset == hikari.UNDEFINED else offset,
             self._distortion.scale if scale == hikari.UNDEFINED else scale,
         )
@@ -507,7 +519,9 @@ class Filters(filters_.Filters):
             self._low_pass = LowPass(None)
 
         self._low_pass = LowPass(
-            self._low_pass.smoothing if smoothing == hikari.UNDEFINED else smoothing,
+            self._low_pass.smoothing
+            if smoothing == hikari.UNDEFINED
+            else smoothing,
         )
 
         return self
@@ -706,26 +720,3 @@ class LowPass(filters_.LowPass):
             raise ValueError("Frequency must be at or above 1.")
 
         self._smoothing = smoothing
-
-
-# MIT License
-
-# Copyright (c) 2023-present MPlatypus
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.

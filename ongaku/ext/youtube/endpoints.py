@@ -52,11 +52,7 @@ async def fetch_youtube(session: Session, /) -> str | None:
     None
         Returned when youtube is disabled.
     """
-    response = await session.request(
-        "GET",
-        "/youtube",
-        str,
-    )
+    response = await session.request("GET", "/youtube", str)
 
     if response is None:
         raise ValueError("Response is required for this request.")
@@ -126,7 +122,7 @@ async def update_youtube(
     ):
         raise ValueError("At least one value must be modified.")
 
-    json: typing.Mapping[str, typing.Any] = {}
+    json: dict[str, typing.Any] = {}
 
     if refresh_token:
         json.update({"refreshToken": refresh_token})

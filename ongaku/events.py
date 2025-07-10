@@ -1,10 +1,7 @@
-"""
-Error Impl's.
+"""Error Impl's.
 
 The error implemented classes.
 """
-
-from __future__ import annotations
 
 import typing
 
@@ -24,10 +21,7 @@ if typing.TYPE_CHECKING:
     from ongaku.client import Client
     from ongaku.session import Session
 
-__all__ = (
-    "PayloadEvent",
-    "ReadyEvent",
-)
+__all__ = ("PayloadEvent", "ReadyEvent")
 
 
 class PayloadEvent(events_.OngakuEvent):
@@ -364,7 +358,9 @@ class TrackEndEvent(events_.OngakuEvent):
         reason: events_.TrackEndReasonType,
     ) -> TrackEndEvent:
         """Build the [TrackEndEvent][ongaku.events.TrackEndEvent] with just a session."""
-        return cls(session.app, session.client, session, guild_id, track, reason)
+        return cls(
+            session.app, session.client, session, guild_id, track, reason
+        )
 
     @property
     def guild_id(self) -> hikari.Snowflake:
@@ -456,7 +452,9 @@ class TrackExceptionEvent(events_.OngakuEvent):
         exception: errors_.ExceptionError,
     ) -> TrackExceptionEvent:
         """Build the [TrackExceptionEvent][ongaku.events.TrackExceptionEvent] with just a session."""
-        return cls(session.app, session.client, session, guild_id, track, exception)
+        return cls(
+            session.app, session.client, session, guild_id, track, exception
+        )
 
     @property
     def guild_id(self) -> hikari.Snowflake:
@@ -526,7 +524,9 @@ class TrackStuckEvent(events_.OngakuEvent):
         threshold_ms: int,
     ) -> TrackStuckEvent:
         """Build the [PayloadEvent][ongaku.events.PayloadEvent] with just a session."""
-        return cls(session.app, session.client, session, guild_id, track, threshold_ms)
+        return cls(
+            session.app, session.client, session, guild_id, track, threshold_ms
+        )
 
     @property
     def guild_id(self) -> hikari.Snowflake:
@@ -733,7 +733,9 @@ class QueueNextEvent(events_.OngakuEvent):
         old_track: track_.Track,
     ) -> QueueNextEvent:
         """Build the [PayloadEvent][ongaku.events.PayloadEvent] with just a session."""
-        return cls(session.app, session.client, session, guild_id, track, old_track)
+        return cls(
+            session.app, session.client, session, guild_id, track, old_track
+        )
 
     @property
     def guild_id(self) -> hikari.Snowflake:
@@ -761,26 +763,3 @@ class QueueNextEvent(events_.OngakuEvent):
             return False
 
         return self.old_track == other.old_track
-
-
-# MIT License
-
-# Copyright (c) 2023-present MPlatypus
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.

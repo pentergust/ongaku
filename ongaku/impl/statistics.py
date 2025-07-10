@@ -1,5 +1,4 @@
-"""
-Statistics Impl's.
+"""Statistics Impl's.
 
 The statistics implemented classes.
 """
@@ -71,7 +70,9 @@ class Statistics(statistics_.Statistics):
 
 
 class Memory(statistics_.Memory):
-    def __init__(self, free: int, used: int, allocated: int, reservable: int) -> None:
+    def __init__(
+        self, free: int, used: int, allocated: int, reservable: int
+    ) -> None:
         self._free = free
         self._used = used
         self._allocated = allocated
@@ -79,7 +80,9 @@ class Memory(statistics_.Memory):
 
 
 class Cpu(statistics_.Cpu):
-    def __init__(self, cores: int, system_load: float, lavalink_load: float) -> None:
+    def __init__(
+        self, cores: int, system_load: float, lavalink_load: float
+    ) -> None:
         self._cores = cores
         self._system_load = system_load
         self._lavalink_load = lavalink_load
@@ -90,26 +93,3 @@ class FrameStatistics(statistics_.FrameStatistics):
         self._sent = sent
         self._nulled = nulled
         self._deficit = deficit
-
-
-# MIT License
-
-# Copyright (c) 2023-present MPlatypus
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.

@@ -1,10 +1,7 @@
-"""
-Client.
+"""Client.
 
 The base client for ongaku.
 """
-
-from __future__ import annotations
 
 import typing
 
@@ -178,7 +175,9 @@ class Client:
         except KeyError:
             raise Exception("The gateway bot requested was not found.")
 
-        cls = cls(app, session_handler=session_handler, logs=logs, attempts=attempts)
+        cls = cls(
+            app, session_handler=session_handler, logs=logs, attempts=attempts
+        )
 
         client.set_type_dependency(Client, cls)
 
@@ -364,7 +363,9 @@ class Client:
         """
         await self.session_handler.delete_session(name)
 
-    def create_player(self, guild: hikari.SnowflakeishOr[hikari.Guild]) -> Player:
+    def create_player(
+        self, guild: hikari.SnowflakeishOr[hikari.Guild]
+    ) -> Player:
         """
         Create a player.
 
@@ -408,7 +409,9 @@ class Client:
 
         return self.session_handler.add_player(new_player)
 
-    def fetch_player(self, guild: hikari.SnowflakeishOr[hikari.Guild]) -> Player:
+    def fetch_player(
+        self, guild: hikari.SnowflakeishOr[hikari.Guild]
+    ) -> Player:
         """
         Fetch a player.
 
@@ -435,7 +438,9 @@ class Client:
         """
         return self.session_handler.fetch_player(guild)
 
-    async def delete_player(self, guild: hikari.SnowflakeishOr[hikari.Guild]) -> None:
+    async def delete_player(
+        self, guild: hikari.SnowflakeishOr[hikari.Guild]
+    ) -> None:
         """
         Delete a player.
 
@@ -459,26 +464,3 @@ class Client:
             Raised when the player for the specified guild does not exist.
         """
         await self.session_handler.delete_player(guild)
-
-
-# MIT License
-
-# Copyright (c) 2023-present MPlatypus
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.

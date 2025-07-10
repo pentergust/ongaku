@@ -1,16 +1,17 @@
-"""
-A voice handling library for hikari.
+"""A voice handling library for hikari.
 
-GitHub:
-https://github.com/hikari-ongaku/hikari-ongaku
-Docs:
-https://ongaku.mplaty.com
+GitHub: https://github.com/hikari-ongaku/hikari-ongaku
+Docs: https://ongaku.mplaty.com
 """
-
-from __future__ import annotations
 
 import logging
 
+from ongaku.__metadata__ import __author__
+from ongaku.__metadata__ import __author_email__
+from ongaku.__metadata__ import __license__
+from ongaku.__metadata__ import __maintainer__
+from ongaku.__metadata__ import __url__
+from ongaku.__metadata__ import __version__
 from ongaku.abc.errors import SeverityType
 from ongaku.abc.events import TrackEndReasonType
 from ongaku.abc.filters import BandType
@@ -50,12 +51,6 @@ from ongaku.events import TrackStartEvent
 from ongaku.events import TrackStuckEvent
 from ongaku.events import WebsocketClosedEvent
 from ongaku.impl.filters import Filters
-from ongaku.internal.about import __author__
-from ongaku.internal.about import __author_email__
-from ongaku.internal.about import __license__
-from ongaku.internal.about import __maintainer__
-from ongaku.internal.about import __url__
-from ongaku.internal.about import __version__
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import TRACE_NAME
 from ongaku.player import Player
@@ -64,7 +59,7 @@ from ongaku.session import Session
 logging.addLevelName(TRACE_LEVEL, TRACE_NAME)
 
 __all__ = (  # noqa: RUF022
-    # .about
+    # .__metadata__
     "__author__",
     "__author_email__",
     "__maintainer__",
@@ -122,26 +117,3 @@ __all__ = (  # noqa: RUF022
     # .playlist
     "Playlist",
 )
-
-
-# MIT License
-
-# Copyright (c) 2023-present MPlatypus
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.

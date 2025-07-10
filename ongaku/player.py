@@ -1,10 +1,7 @@
-"""
-Player.
+"""Player.
 
 The player function, for all player related things.
 """
-
-from __future__ import annotations
 
 import random
 import typing
@@ -90,7 +87,9 @@ class Player:
         self._loop = False
 
         self.app.event_manager.subscribe(TrackEndEvent, self._track_end_event)
-        self.app.event_manager.subscribe(PlayerUpdateEvent, self._player_update_event)
+        self.app.event_manager.subscribe(
+            PlayerUpdateEvent, self._player_update_event
+        )
 
     @property
     def session(self) -> Session:
@@ -572,7 +571,9 @@ class Player:
 
         self._is_paused = True
 
-        _logger.log(TRACE_LEVEL, f"Successfully stopped track in guild {self.guild_id}")
+        _logger.log(
+            TRACE_LEVEL, f"Successfully stopped track in guild {self.guild_id}"
+        )
 
         self._update(player)
 
@@ -644,7 +645,9 @@ class Player:
             Raised when a construction of a ABC class fails.
         """
         if amount <= 0:
-            raise ValueError(f"Skip amount cannot be 0 or negative. Value: {amount}")
+            raise ValueError(
+                f"Skip amount cannot be 0 or negative. Value: {amount}"
+            )
         if len(self.queue) == 0:
             raise errors.PlayerQueueError("Queue is empty.")
 
@@ -683,7 +686,9 @@ class Player:
 
             self._update(player)
 
-        _logger.log(TRACE_LEVEL, f"Successfully skipped track in {self.guild_id}")
+        _logger.log(
+            TRACE_LEVEL, f"Successfully skipped track in {self.guild_id}"
+        )
 
     def remove(self, value: track_.Track | int) -> None:
         """
@@ -715,7 +720,9 @@ class Player:
 
         try:
             index = (
-                self._queue.index(value) if isinstance(value, track_.Track) else value
+                self._queue.index(value)
+                if isinstance(value, track_.Track)
+                else value
             )
         except ValueError:
             if isinstance(value, track_.Track):
@@ -737,7 +744,9 @@ class Player:
                 f"Failed to remove song in position {value}",
             )
 
-        _logger.log(TRACE_LEVEL, f"Successfully removed track in {self.guild_id}")
+        _logger.log(
+            TRACE_LEVEL, f"Successfully removed track in {self.guild_id}"
+        )
 
     async def clear(self) -> None:
         """
@@ -778,7 +787,9 @@ class Player:
 
         self._update(player)
 
-        _logger.log(TRACE_LEVEL, f"Successfully cleared queue in {self.guild_id}")
+        _logger.log(
+            TRACE_LEVEL, f"Successfully cleared queue in {self.guild_id}"
+        )
 
     def set_autoplay(self, enable: bool | None = None) -> bool:
         """
@@ -844,9 +855,13 @@ class Player:
 
         if volume:
             if volume < 0:
-                raise ValueError(f"Volume cannot be below zero. Volume: {volume}")
+                raise ValueError(
+                    f"Volume cannot be below zero. Volume: {volume}"
+                )
             if volume > 1000:
-                raise ValueError(f"Volume cannot be above 1000. Volume: {volume}")
+                raise ValueError(
+                    f"Volume cannot be above 1000. Volume: {volume}"
+                )
 
         player = await self.session.client.rest.update_player(
             session,
@@ -1123,26 +1138,3 @@ class Player:
 
         self._state = event.state
         self._connected = event.state.connected
-
-
-# MIT License
-
-# Copyright (c) 2023-present MPlatypus
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
