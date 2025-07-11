@@ -3,12 +3,13 @@
 Route planner abstract classes.
 """
 
-import abc
 import enum
 import typing
 
 if typing.TYPE_CHECKING:
     import datetime
+
+from ongaku.abc.payload import PayloadObject
 
 __all__ = (
     "FailingAddress",
@@ -20,38 +21,110 @@ __all__ = (
 )
 
 
-class RoutePlannerStatus(abc.ABC):
+class RoutePlannerType(str, enum.Enum):
+    """Route Planner Type.
+
+    The type of routeplanner that the server is currently using.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#route-planner-types)
     """
-    Route Planner Status Object.
 
-    The status of the route-planner.
+    ROTATING_ROUTE_PLANNER = "RotatingIpRoutePlanner"
+    """IP address used is switched on ban. Recommended for IPv4 blocks or IPv6 blocks smaller than a /64."""
+    NANO_IP_ROUTE_PLANNER = "NanoIpRoutePlanner"
+    """IP address used is switched on clock update. Use with at least 1 /64 IPv6 block."""
+    ROTATING_NANO_IP_ROUTE_PLANNER = "RotatingNanoIpRoutePlanner"
+    """IP address used is switched on clock update, rotates to a different /64 block on ban. Use with at least 2x /64 IPv6 blocks."""
+    BALANCING_IP_ROUTE_PLANNER = "BalancingIpRoutePlanner"
+    """IP address used is selected at random per request. Recommended for larger IP blocks."""
 
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#get-routeplanner-status)
+
+class IPBlockType(str, enum.Enum):
+    """IP Block Type.
+
+    The IP Block type, 4, or 6.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#ip-block-type)
     """
 
-    __slots__: typing.Sequence[str] = ("_cls", "_details")
+    INET_4_ADDRESS = "Inet4Address"
+    """The ipv4 block type"""
+    INET_6_ADDRESS = "Inet6Address"
+    """The ipv6 block type"""
+
+
+class IPBlock(PayloadObject):
+    """
+    Route Planner IP Block.
+
+    All of the information about the IP Block.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#ip-block-object)
+    """
+
+    __slots__: typing.Sequence[str] = ("_size", "_type")
 
     @property
-    def cls(self) -> RoutePlannerType:
-        """The name of the RoutePlanner implementation being used by this server."""
-        return self._cls
+    def type(self) -> IPBlockType:
+        """The type of the ip block."""
+        return self._type
 
     @property
-    def details(self) -> RoutePlannerDetails:
-        """The status details of the RoutePlanner."""
-        return self._details
+    def size(self) -> str:
+        """The size of the ip block."""
+        return self._size
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, RoutePlannerStatus):
+        if not isinstance(other, IPBlock):
             return False
 
-        if self.cls != other.cls:
+        if self.type != other.type:
             return False
 
-        return self.details == other.details
+        return self.size == other.size
 
 
-class RoutePlannerDetails(abc.ABC):
+class FailingAddress(PayloadObject):
+    """Failing address.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#failing-address-object)
+    """
+
+    __slots__: typing.Sequence[str] = (
+        "_address",
+        "_time",
+        "_timestamp",
+    )
+
+    @property
+    def address(self) -> str:
+        """The failing address."""
+        return self._address
+
+    @property
+    def timestamp(self) -> datetime.datetime:
+        """The datetime object of when the address failed."""
+        return self._timestamp
+
+    @property
+    def time(self) -> str:
+        """The timestamp when the address failed as a pretty string."""
+        return self._time
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, FailingAddress):
+            return False
+
+        if self.address != other.address:
+            return False
+
+        if self.timestamp != other.timestamp:
+            return False
+
+        return self.time == other.time
+
+
+class RoutePlannerDetails(PayloadObject):
     """
     Route Planner details.
 
@@ -130,107 +203,32 @@ class RoutePlannerDetails(abc.ABC):
         return self.block_index == other.block_index
 
 
-class IPBlock(abc.ABC):
+class RoutePlannerStatus(PayloadObject):
     """
-    Route Planner IP Block.
+    Route Planner Status Object.
 
-    All of the information about the IP Block.
+    The status of the route-planner.
 
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#ip-block-object)
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#get-routeplanner-status)
     """
 
-    __slots__: typing.Sequence[str] = ("_size", "_type")
+    __slots__: typing.Sequence[str] = ("_cls", "_details")
 
     @property
-    def type(self) -> IPBlockType:
-        """The type of the ip block."""
-        return self._type
+    def cls(self) -> RoutePlannerType:
+        """The name of the RoutePlanner implementation being used by this server."""
+        return self._cls
 
     @property
-    def size(self) -> str:
-        """The size of the ip block."""
-        return self._size
+    def details(self) -> RoutePlannerDetails:
+        """The status details of the RoutePlanner."""
+        return self._details
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, IPBlock):
+        if not isinstance(other, RoutePlannerStatus):
             return False
 
-        if self.type != other.type:
+        if self.cls != other.cls:
             return False
 
-        return self.size == other.size
-
-
-class FailingAddress(abc.ABC):
-    """
-    Failing address.
-
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#failing-address-object)
-    """
-
-    __slots__: typing.Sequence[str] = (
-        "_address",
-        "_time",
-        "_timestamp",
-    )
-
-    @property
-    def address(self) -> str:
-        """The failing address."""
-        return self._address
-
-    @property
-    def timestamp(self) -> datetime.datetime:
-        """The datetime object of when the address failed."""
-        return self._timestamp
-
-    @property
-    def time(self) -> str:
-        """The timestamp when the address failed as a pretty string."""
-        return self._time
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, FailingAddress):
-            return False
-
-        if self.address != other.address:
-            return False
-
-        if self.timestamp != other.timestamp:
-            return False
-
-        return self.time == other.time
-
-
-class RoutePlannerType(str, enum.Enum):
-    """
-    Route Planner Type.
-
-    The type of routeplanner that the server is currently using.
-
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#route-planner-types)
-    """
-
-    ROTATING_ROUTE_PLANNER = "RotatingIpRoutePlanner"
-    """IP address used is switched on ban. Recommended for IPv4 blocks or IPv6 blocks smaller than a /64."""
-    NANO_IP_ROUTE_PLANNER = "NanoIpRoutePlanner"
-    """IP address used is switched on clock update. Use with at least 1 /64 IPv6 block."""
-    ROTATING_NANO_IP_ROUTE_PLANNER = "RotatingNanoIpRoutePlanner"
-    """IP address used is switched on clock update, rotates to a different /64 block on ban. Use with at least 2x /64 IPv6 blocks."""
-    BALANCING_IP_ROUTE_PLANNER = "BalancingIpRoutePlanner"
-    """IP address used is selected at random per request. Recommended for larger IP blocks."""
-
-
-class IPBlockType(str, enum.Enum):
-    """
-    IP Block Type.
-
-    The IP Block type, 4, or 6.
-
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#ip-block-type)
-    """
-
-    INET_4_ADDRESS = "Inet4Address"
-    """The ipv4 block type"""
-    INET_6_ADDRESS = "Inet6Address"
-    """The ipv6 block type"""
+        return self.details == other.details

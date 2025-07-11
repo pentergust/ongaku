@@ -13,6 +13,9 @@ from ongaku import errors
 from ongaku import events
 from ongaku.__metadata__ import __version__
 from ongaku.abc import session as session_
+from ongaku.impl.player import State
+from ongaku.impl.statistics import Statistics
+from ongaku.impl.track import Track
 from ongaku.internal.converters import json_loads
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
@@ -251,9 +254,7 @@ class Session:
                 raise errors.RestStatusError(response.status, response.reason)
 
             try:
-                rest_error = self.client.entity_builder.build_rest_error(
-                    payload
-                )
+                rest_error = errors.RestRequestError.from_payload(payload)
             except Exception:
                 raise errors.RestStatusError(response.status, response.reason)
             raise rest_error
@@ -285,54 +286,73 @@ class Session:
         op_code = session_.WebsocketOPCode(mapped_data["op"])
 
         if op_code == session_.WebsocketOPCode.READY:
-            event = self.client.entity_builder.build_ready_event(
-                mapped_data, self
+            event: events.events_.OngakuEvent = events.ReadyEvent.from_session(
+                self, mapped_data["resumed"], mapped_data["sessionId"]
             )
-
             self._session_id = event.session_id
 
         elif op_code == session_.WebsocketOPCode.PLAYER_UPDATE:
-            event = self.client.entity_builder.build_player_update_event(
-                mapped_data,
+            event = events.PlayerUpdateEvent.from_session(
                 self,
+                hikari.Snowflake(int(mapped_data["guildId"])),
+                State.from_payload(mapped_data["state"]),
             )
 
         elif op_code == session_.WebsocketOPCode.STATS:
-            event = self.client.entity_builder.build_statistics_event(
-                mapped_data, self
+            stats = Statistics.from_payload(mapped_data)
+            event = events.StatisticsEvent.from_session(
+                self,
+                stats.players,
+                stats.playing_players,
+                stats.uptime,
+                stats.memory,
+                stats.cpu,
+                stats.frame_stats,
             )
 
         else:
             event_type = session_.WebsocketEvent(mapped_data["type"])
 
             if event_type == session_.WebsocketEvent.TRACK_START_EVENT:
-                event = self.client.entity_builder.build_track_start_event(
-                    mapped_data,
+                event = events.TrackStartEvent.from_session(
                     self,
+                    hikari.Snowflake(int(mapped_data["guildId"])),
+                    Track.from_payload(mapped_data["track"]),
                 )
 
             elif event_type == session_.WebsocketEvent.TRACK_END_EVENT:
-                event = self.client.entity_builder.build_track_end_event(
-                    mapped_data,
+                event = events.TrackEndEvent.from_session(
                     self,
+                    hikari.Snowflake(int(mapped_data["guildId"])),
+                    Track.from_payload(mapped_data["track"]),
+                    events.events_.TrackEndReasonType(mapped_data["reason"]),
                 )
 
             elif event_type == session_.WebsocketEvent.TRACK_EXCEPTION_EVENT:
-                event = self.client.entity_builder.build_track_exception_event(
-                    mapped_data,
+                event = events.TrackExceptionEvent.from_session(
                     self,
+                    hikari.Snowflake(int(mapped_data["guildId"])),
+                    Track.from_payload(mapped_data["track"]),
+                    events.TrackException.from_payload(
+                        mapped_data["exception"]
+                    ),
                 )
 
             elif event_type == session_.WebsocketEvent.TRACK_STUCK_EVENT:
-                event = self.client.entity_builder.build_track_stuck_event(
-                    mapped_data,
+                event = events.TrackStuckEvent.from_session(
                     self,
+                    hikari.Snowflake(int(mapped_data["guildId"])),
+                    Track.from_payload(mapped_data["track"]),
+                    mapped_data["thresholdMs"],
                 )
 
             else:
-                event = self.client.entity_builder.build_websocket_closed_event(
-                    mapped_data,
+                event = events.WebsocketClosedEvent.from_session(
                     self,
+                    hikari.Snowflake(int(mapped_data["guildId"])),
+                    mapped_data["code"],
+                    mapped_data["reason"],
+                    mapped_data["byRemote"],
                 )
 
         return event

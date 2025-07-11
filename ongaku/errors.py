@@ -3,14 +3,12 @@
 All of the ongaku errors.
 """
 
+import datetime
 import typing
 
 from ongaku.abc import errors as errors_
-
-if typing.TYPE_CHECKING:
-    import datetime
-
-    from ongaku.abc.errors import SeverityType
+from ongaku.abc.errors import SeverityType
+from ongaku.abc.payload import PayloadObject
 
 __all__ = (
     "BuildError",
@@ -65,7 +63,7 @@ class RestStatusError(RestError):
         return self._reason
 
 
-class RestRequestError(RestError):
+class RestRequestError(RestError, PayloadObject):
     """Raised when a rest error is received from the response."""
 
     __slots__: typing.Sequence[str] = (
@@ -123,12 +121,37 @@ class RestRequestError(RestError):
         """The stack trace of the error."""
         return self._trace
 
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "RestRequestError":
+        """Build Rest Request Error from payload.
+
+        Raises
+        ------
+        TypeError
+            Raised when the payload could not be turned into a mapping.
+        KeyError
+            Raised when a value was not found in the payload.
+        """
+        return RestRequestError(
+            datetime.datetime.fromtimestamp(
+                int(payload["timestamp"]) / 1000,
+                datetime.timezone.utc,
+            ),
+            payload["status"],
+            payload["error"],
+            payload["message"],
+            payload["path"],
+            payload.get("trace", None),
+        )
+
 
 class RestEmptyError(RestError):
     """Raised when the request was 204, but data was requested."""
 
 
-class RestExceptionError(RestError, errors_.ExceptionError):
+class RestExceptionError(RestError, errors_.ExceptionError, PayloadObject):
     """Raised when a track search results in a error result."""
 
     __slots__: typing.Sequence[str] = ()
@@ -158,6 +181,25 @@ class RestExceptionError(RestError, errors_.ExceptionError):
     @property
     def cause(self) -> str:
         return self._cause
+
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "RestExceptionError":
+        """Build Rest Exception Error from payload.
+
+        Raises
+        ------
+        TypeError
+            Raised when the payload could not be turned into a mapping.
+        KeyError
+            Raised when a value was not found in the payload.
+        """
+        return RestExceptionError(
+            payload.get("message", None),
+            errors_.SeverityType(payload["severity"]),
+            payload["cause"],
+        )
 
 
 # Client

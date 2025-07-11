@@ -8,6 +8,7 @@ import typing
 import hikari
 
 from ongaku import errors
+from ongaku.impl.session import Session as SessionImpl
 from ongaku.internal import routes
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
@@ -129,21 +130,16 @@ class RESTClient:
 
         if load_type == "error":
             _logger.log(TRACE_LEVEL, "loadType caused an error.")
-
             raise errors.RestExceptionError.from_error(
-                self._client.entity_builder.build_exception_error(
-                    response["data"]
-                ),
+                errors.RestExceptionError.from_payload(response["data"]),
             )
 
         if load_type == "search":
             _logger.log(TRACE_LEVEL, "loadType was a search result.")
-            tracks: typing.Sequence[Track] = []
+            tracks: typing.MutableSequence[Track] = []
             for track in response["data"]:
                 try:
-                    tracks.append(
-                        self._client.entity_builder.build_track(track)
-                    )
+                    tracks.append(Track.from_payload(track))
                 except Exception as e:
                     raise errors.BuildError(e)
 
@@ -152,18 +148,14 @@ class RESTClient:
         elif load_type == "track":
             _logger.log(TRACE_LEVEL, "loadType was a track link.")
             try:
-                build = self._client.entity_builder.build_track(
-                    response["data"]
-                )
+                build = Track.from_payload(response["data"])
             except Exception as e:
                 raise errors.BuildError(e)
 
         elif load_type == "playlist":
             _logger.log(TRACE_LEVEL, "loadType was a playlist link.")
             try:
-                build = self._client.entity_builder.build_playlist(
-                    response["data"]
-                )
+                build = Playlist.from_payload(response["data"])
             except Exception as e:
                 raise errors.BuildError(e)
 
@@ -243,7 +235,7 @@ class RESTClient:
             raise ValueError("Response is required for this request.")
 
         try:
-            return self._client.entity_builder.build_track(response)
+            return Track.from_payload(response)
         except Exception as e:
             raise errors.BuildError(e)
 
@@ -319,9 +311,7 @@ class RESTClient:
 
         for track in response:
             try:
-                new_tracks.append(
-                    self._client.entity_builder.build_track(track)
-                )
+                new_tracks.append(Track.from_payload(track))
             except Exception as e:
                 raise errors.BuildError(e)
 
@@ -397,7 +387,7 @@ class RESTClient:
         players: list[Player] = []
 
         for player in response:
-            players.append(self._client.entity_builder.build_player(player))
+            players.append(Player.from_payload(player))
 
         return players
 
@@ -472,7 +462,7 @@ class RESTClient:
         if response is None:
             raise ValueError("Response is required for this request.")
 
-        return self._client.entity_builder.build_player(response)
+        return Player.from_payload(response)
 
     async def update_player(  # noqa: C901
         self,
@@ -825,7 +815,7 @@ class RESTClient:
         if response is None:
             raise ValueError("Response is required for this request.")
 
-        return self._client.entity_builder.build_player(response)
+        return Player.from_payload(response)
 
     async def delete_player(
         self,
@@ -965,7 +955,7 @@ class RESTClient:
         if response is None:
             raise ValueError("Response is required for this request.")
 
-        return self._client.entity_builder.build_session(response)
+        return SessionImpl.from_payload(response)
 
     async def fetch_info(self, *, session: Session | None = None) -> Info:
         """
@@ -1026,7 +1016,7 @@ class RESTClient:
         if response is None:
             raise ValueError("Response is required for this request.")
 
-        return self._client.entity_builder.build_info(response)
+        return Info.from_payload(response)
 
     async def fetch_version(self, *, session: Session | None = None) -> str:
         """
@@ -1149,7 +1139,7 @@ class RESTClient:
         if response is None:
             raise ValueError("Response is required for this request.")
 
-        return self._client.entity_builder.build_statistics(response)
+        return Statistics.from_payload(response)
 
     async def fetch_routeplanner_status(
         self,
@@ -1220,7 +1210,7 @@ class RESTClient:
         if response is None:
             return None
 
-        return self._client.entity_builder.build_routeplanner_status(response)
+        return RoutePlannerStatus.from_payload(response)
 
     async def update_routeplanner_address(
         self,

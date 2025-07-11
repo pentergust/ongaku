@@ -3,16 +3,51 @@
 The playlist abstract classes.
 """
 
-import abc
 import typing
 
 if typing.TYPE_CHECKING:
     from ongaku.abc.track import Track
 
+from ongaku.abc.payload import PayloadObject
+
 __all__ = ("Playlist", "PlaylistInfo")
 
 
-class Playlist(abc.ABC):
+class PlaylistInfo(PayloadObject):
+    """
+    Playlist information.
+
+    The playlist info object.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#playlist-info)
+    """
+
+    __slots__: typing.Sequence[str] = (
+        "_name",
+        "_selected_track",
+    )
+
+    @property
+    def name(self) -> str:
+        """The name of the playlist."""
+        return self._name
+
+    @property
+    def selected_track(self) -> int:
+        """The selected track of the playlist (`-1` if no track is selected)."""
+        return self._selected_track
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PlaylistInfo):
+            return False
+
+        if self.name != other.name:
+            return False
+
+        return self.selected_track == other.selected_track
+
+
+class Playlist(PayloadObject):
     """
     Playlist.
 
@@ -53,37 +88,3 @@ class Playlist(abc.ABC):
             return False
 
         return self.plugin_info == other.plugin_info
-
-
-class PlaylistInfo(abc.ABC):
-    """
-    Playlist information.
-
-    The playlist info object.
-
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#playlist-info)
-    """
-
-    __slots__: typing.Sequence[str] = (
-        "_name",
-        "_selected_track",
-    )
-
-    @property
-    def name(self) -> str:
-        """The name of the playlist."""
-        return self._name
-
-    @property
-    def selected_track(self) -> int:
-        """The selected track of the playlist (`-1` if no track is selected)."""
-        return self._selected_track
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, PlaylistInfo):
-            return False
-
-        if self.name != other.name:
-            return False
-
-        return self.selected_track == other.selected_track

@@ -3,16 +3,161 @@
 The info abstract classes.
 """
 
-import abc
 import typing
 
 if typing.TYPE_CHECKING:
     import datetime
 
+from ongaku.abc.payload import PayloadObject
+
 __all__ = ("Git", "Info", "Plugin", "Version")
 
 
-class Info(abc.ABC):
+class Version(PayloadObject):
+    """
+    Version information.
+
+    All information, about the version of lavalink that is running.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#version-object)
+    """
+
+    __slots__: typing.Sequence[str] = (
+        "_build",
+        "_major",
+        "_minor",
+        "_patch",
+        "_pre_release",
+        "_semver",
+    )
+
+    @property
+    def semver(self) -> str:
+        """The full version string of this Lavalink server."""
+        return self._semver
+
+    @property
+    def major(self) -> int:
+        """The major version of this Lavalink server."""
+        return self._major
+
+    @property
+    def minor(self) -> int:
+        """The minor version of this Lavalink server."""
+        return self._minor
+
+    @property
+    def patch(self) -> int:
+        """The patch version of this Lavalink server."""
+        return self._patch
+
+    @property
+    def pre_release(self) -> str:
+        """The pre-release version according to semver as a `.` separated list of identifiers."""
+        return self._pre_release
+
+    @property
+    def build(self) -> str | None:
+        """The build metadata according to semver as a `.` separated list of identifiers."""
+        return self._build
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Version):
+            return False
+
+        if self.semver != other.semver:
+            return False
+
+        if self.major != other.major:
+            return False
+
+        if self.minor != other.minor:
+            return False
+
+        if self.patch != other.patch:
+            return False
+
+        if self.pre_release != other.pre_release:
+            return False
+
+        return self.build == other.build
+
+
+class Git(PayloadObject):
+    """
+    Git information.
+
+    All of the information about the lavalink git information.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#git-object)
+    """
+
+    __slots__: typing.Sequence[str] = (
+        "_branch",
+        "_commit",
+        "_commit_time",
+    )
+
+    @property
+    def branch(self) -> str:
+        """The branch this Lavalink server was built on."""
+        return self._branch
+
+    @property
+    def commit(self) -> str:
+        """The commit this Lavalink server was built on."""
+        return self._commit
+
+    @property
+    def commit_time(self) -> datetime.datetime:
+        """The datetime object of when the commit was created."""
+        return self._commit_time
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Git):
+            return False
+
+        if self.branch != other.branch:
+            return False
+
+        if self.commit != other.commit:
+            return False
+
+        return self.commit_time == other.commit_time
+
+
+class Plugin(PayloadObject):
+    """
+    Plugin information.
+
+    All of the Information about the currently loaded plugins.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#plugin-object)
+    """
+
+    __slots__: typing.Sequence[str] = ("_name", "_version")
+
+    @property
+    def name(self) -> str:
+        """The name of the plugin."""
+        return self._name
+
+    @property
+    def version(self) -> str:
+        """The version of the plugin."""
+        return self._version
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Plugin):
+            return False
+
+        if self.name != other.name:
+            return False
+
+        return self.version == other.version
+
+
+class Info(PayloadObject):
     """
     Information.
 
@@ -98,147 +243,3 @@ class Info(abc.ABC):
             return False
 
         return self.plugins == other.plugins
-
-
-class Version(abc.ABC):
-    """
-    Version information.
-
-    All information, about the version of lavalink that is running.
-
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#version-object)
-    """
-
-    __slots__: typing.Sequence[str] = (
-        "_build",
-        "_major",
-        "_minor",
-        "_patch",
-        "_pre_release",
-        "_semver",
-    )
-
-    @property
-    def semver(self) -> str:
-        """The full version string of this Lavalink server."""
-        return self._semver
-
-    @property
-    def major(self) -> int:
-        """The major version of this Lavalink server."""
-        return self._major
-
-    @property
-    def minor(self) -> int:
-        """The minor version of this Lavalink server."""
-        return self._minor
-
-    @property
-    def patch(self) -> int:
-        """The patch version of this Lavalink server."""
-        return self._patch
-
-    @property
-    def pre_release(self) -> str:
-        """The pre-release version according to semver as a `.` separated list of identifiers."""
-        return self._pre_release
-
-    @property
-    def build(self) -> str | None:
-        """The build metadata according to semver as a `.` separated list of identifiers."""
-        return self._build
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Version):
-            return False
-
-        if self.semver != other.semver:
-            return False
-
-        if self.major != other.major:
-            return False
-
-        if self.minor != other.minor:
-            return False
-
-        if self.patch != other.patch:
-            return False
-
-        if self.pre_release != other.pre_release:
-            return False
-
-        return self.build == other.build
-
-
-class Git(abc.ABC):
-    """
-    Git information.
-
-    All of the information about the lavalink git information.
-
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#git-object)
-    """
-
-    __slots__: typing.Sequence[str] = (
-        "_branch",
-        "_commit",
-        "_commit_time",
-    )
-
-    @property
-    def branch(self) -> str:
-        """The branch this Lavalink server was built on."""
-        return self._branch
-
-    @property
-    def commit(self) -> str:
-        """The commit this Lavalink server was built on."""
-        return self._commit
-
-    @property
-    def commit_time(self) -> datetime.datetime:
-        """The datetime object of when the commit was created."""
-        return self._commit_time
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Git):
-            return False
-
-        if self.branch != other.branch:
-            return False
-
-        if self.commit != other.commit:
-            return False
-
-        return self.commit_time == other.commit_time
-
-
-class Plugin(abc.ABC):
-    """
-    Plugin information.
-
-    All of the Information about the currently loaded plugins.
-
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#plugin-object)
-    """
-
-    __slots__: typing.Sequence[str] = ("_name", "_version")
-
-    @property
-    def name(self) -> str:
-        """The name of the plugin."""
-        return self._name
-
-    @property
-    def version(self) -> str:
-        """The version of the plugin."""
-        return self._version
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Plugin):
-            return False
-
-        if self.name != other.name:
-            return False
-
-        return self.version == other.version

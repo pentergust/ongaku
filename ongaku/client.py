@@ -7,9 +7,9 @@ import typing
 
 import aiohttp
 import hikari
+from typing_extensions import Self
 
 from ongaku import errors
-from ongaku.builders import EntityBuilder
 from ongaku.impl.handlers import BasicSessionHandler
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
@@ -58,11 +58,10 @@ class Client:
         The amount of attempts a session will try to connect to the server.
     """
 
-    __slots__: typing.Sequence[str] = (
+    __slots__ = (
         "_app",
         "_attempts",
         "_client_session",
-        "_entity_builder",
         "_is_alive",
         "_rest_client",
         "_session_handler",
@@ -88,8 +87,6 @@ class Client:
 
         self._session_handler = session_handler(self)
 
-        self._entity_builder = EntityBuilder()
-
         app.event_manager.subscribe(hikari.StartedEvent, self._start_event)
         app.event_manager.subscribe(hikari.StoppingEvent, self._stop_event)
 
@@ -101,7 +98,7 @@ class Client:
         session_handler: type[SessionHandler] = BasicSessionHandler,
         logs: str | int = "INFO",
         attempts: int = 3,
-    ) -> Client:
+    ) -> Self:
         """From Arc.
 
         This supports `client` and `player` [injection](../gs/injection.md) for [Arc](https://github.com/hypergonial/hikari-arc)
@@ -146,7 +143,7 @@ class Client:
         session_handler: type[SessionHandler] = BasicSessionHandler,
         logs: str | int = "INFO",
         attempts: int = 3,
-    ) -> Client:
+    ) -> Self:
         """From Tanjun.
 
         This supports `client` [injection](../gs/injection.md) for [Tanjun](https://github.com/FasterSpeeding/Tanjun)
@@ -202,11 +199,6 @@ class Client:
             If the `hikari.StartedEvent` has occurred, and this is False, ongaku is no longer running and has crashed. Check your logs.
         """
         return self.session_handler.is_alive
-
-    @property
-    def entity_builder(self) -> EntityBuilder:
-        """The entity builder."""
-        return self._entity_builder
 
     @property
     def session_handler(self) -> SessionHandler:

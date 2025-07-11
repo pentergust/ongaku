@@ -1,13 +1,11 @@
-"""
-Player ABC's.
+"""Player ABC's.
 
 The player Abstract classes.
 """
 
-from __future__ import annotations
-
-import abc
 import typing
+
+from ongaku.abc.payload import PayloadObject
 
 if typing.TYPE_CHECKING:
     import datetime
@@ -17,14 +15,105 @@ if typing.TYPE_CHECKING:
     from ongaku.abc.filters import Filters
     from ongaku.abc.track import Track
 
-__all__ = (
-    "Player",
-    "State",
-    "Voice",
-)
+__all__ = ("Player", "State", "Voice")
 
 
-class Player(abc.ABC):
+class State(PayloadObject):
+    """
+    Players State.
+
+    All the information for the players current state.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/websocket.html#player-state)
+    """
+
+    __slots__: typing.Sequence[str] = (
+        "_connected",
+        "_ping",
+        "_position",
+        "_time",
+    )
+
+    @property
+    def time(self) -> datetime.datetime:
+        """The current datetime."""
+        return self._time
+
+    @property
+    def position(self) -> int:
+        """The position of the track in milliseconds."""
+        return self._position
+
+    @property
+    def connected(self) -> bool:
+        """Whether Lavalink is connected to the voice gateway."""
+        return self._connected
+
+    @property
+    def ping(self) -> int:
+        """The ping of the session to the Discord voice server in milliseconds (-1 if not connected)."""
+        return self._ping
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, State):
+            return False
+
+        if self.time != other.time:
+            return False
+
+        if self.position != other.position:
+            return False
+
+        if self.connected != other.connected:
+            return False
+
+        return self.ping == other.ping
+
+
+class Voice(PayloadObject):
+    """
+    Players Voice state.
+
+    All of the Player Voice information.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#voice-state)
+    """
+
+    __slots__: typing.Sequence[str] = (
+        "_endpoint",
+        "_session_id",
+        "_token",
+    )
+
+    @property
+    def token(self) -> str:
+        """The Discord voice token to authenticate with."""
+        return self._token
+
+    @property
+    def endpoint(self) -> str:
+        """The Discord voice endpoint to connect to."""
+        return self._endpoint
+
+    @property
+    def session_id(self) -> str:
+        """The Discord voice session id to authenticate with."""
+        return self._session_id
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Voice):
+            return False
+
+        if self.token != other.token:
+            return False
+
+        if self.endpoint != other.endpoint:
+            return False
+
+        return self.session_id == other.session_id
+
+
+class Player(PayloadObject):
     """
     Player information.
 
@@ -105,98 +194,3 @@ class Player(abc.ABC):
             return False
 
         return self.filters == other.filters
-
-
-class State(abc.ABC):
-    """
-    Players State.
-
-    All the information for the players current state.
-
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/websocket.html#player-state)
-    """
-
-    __slots__: typing.Sequence[str] = (
-        "_connected",
-        "_ping",
-        "_position",
-        "_time",
-    )
-
-    @property
-    def time(self) -> datetime.datetime:
-        """The current datetime."""
-        return self._time
-
-    @property
-    def position(self) -> int:
-        """The position of the track in milliseconds."""
-        return self._position
-
-    @property
-    def connected(self) -> bool:
-        """Whether Lavalink is connected to the voice gateway."""
-        return self._connected
-
-    @property
-    def ping(self) -> int:
-        """The ping of the session to the Discord voice server in milliseconds (-1 if not connected)."""
-        return self._ping
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, State):
-            return False
-
-        if self.time != other.time:
-            return False
-
-        if self.position != other.position:
-            return False
-
-        if self.connected != other.connected:
-            return False
-
-        return self.ping == other.ping
-
-
-class Voice(abc.ABC):
-    """
-    Players Voice state.
-
-    All of the Player Voice information.
-
-    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#voice-state)
-    """
-
-    __slots__: typing.Sequence[str] = (
-        "_endpoint",
-        "_session_id",
-        "_token",
-    )
-
-    @property
-    def token(self) -> str:
-        """The Discord voice token to authenticate with."""
-        return self._token
-
-    @property
-    def endpoint(self) -> str:
-        """The Discord voice endpoint to connect to."""
-        return self._endpoint
-
-    @property
-    def session_id(self) -> str:
-        """The Discord voice session id to authenticate with."""
-        return self._session_id
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Voice):
-            return False
-
-        if self.token != other.token:
-            return False
-
-        if self.endpoint != other.endpoint:
-            return False
-
-        return self.session_id == other.session_id

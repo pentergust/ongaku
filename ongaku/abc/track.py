@@ -3,16 +3,19 @@
 The tracks abstract classes.
 """
 
-import abc
 import typing
+
+from typing_extensions import Self
 
 if typing.TYPE_CHECKING:
     import hikari
 
+from ongaku.abc.payload import PayloadObject
+
 __all__ = ("Track", "TrackInfo")
 
 
-class Track(abc.ABC):
+class Track(PayloadObject):
     """
     Track.
 
@@ -35,7 +38,7 @@ class Track(abc.ABC):
         return self._encoded
 
     @property
-    def info(self) -> TrackInfo:
+    def info(self) -> Self:
         """Information about the track."""
         return self._info
 
@@ -77,7 +80,7 @@ class Track(abc.ABC):
         return self.requestor == other.requestor
 
 
-class TrackInfo(abc.ABC):
+class TrackInfo(PayloadObject):
     """
     Track information.
 

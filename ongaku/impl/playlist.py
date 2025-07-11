@@ -26,8 +26,58 @@ class Playlist(playlist_.Playlist):
         self._tracks = tracks
         self._plugin_info = plugin_info
 
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Playlist":
+        """Build Playlist.
+
+        Builds a [`Playlist`][ongaku.abc.playlist.Playlist] object, from a payload.
+
+        Parameters
+        ----------
+        payload
+            The payload you provide.
+
+        Returns
+        -------
+        playlist_.Playlist
+            The object from the payload.
+
+        Raises
+        ------
+        TypeError
+            Raised when the payload could not be turned into a mapping.
+        KeyError
+            Raised when a value was not found in the payload.
+        """
+        tracks: list[track_.Track] = []
+        for track_payload in payload["tracks"]:
+            tracks.append(track_.Track.from_payload(track_payload))
+
+        return Playlist(
+            PlaylistInfo.from_payload(payload["info"]),
+            tracks,
+            payload["pluginInfo"],
+        )
+
 
 class PlaylistInfo(playlist_.PlaylistInfo):
     def __init__(self, name: str, selected_track: int) -> None:
         self._name = name
         self._selected_track = selected_track
+
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "PlaylistInfo":
+        """Build Playlist Info from payload.
+
+        Raises
+        ------
+        TypeError
+            Raised when the payload could not be turned into a mapping.
+        KeyError
+            Raised when a value was not found in the payload.
+        """
+        return PlaylistInfo(payload["name"], payload["selectedTrack"])

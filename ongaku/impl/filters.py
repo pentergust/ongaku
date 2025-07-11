@@ -1,6 +1,7 @@
 import typing
 
 import hikari
+from typing_extensions import Self
 
 from ongaku.abc import filters as filters_
 
@@ -67,7 +68,7 @@ class Filters(filters_.Filters):
         self._plugin_filters = plugin_filters
 
     @classmethod
-    def from_filter(cls, filters: filters_.Filters) -> Filters:
+    def from_filter(cls, filters: filters_.Filters) -> Self:
         """From Filter.
 
         Convert a immutable filter, into a mutable filter.
@@ -93,7 +94,7 @@ class Filters(filters_.Filters):
             low_pass=filters.low_pass,
         )
 
-    def set_volume(self, volume: float) -> Filters:
+    def set_volume(self, volume: float) -> Self:
         """Set Volume.
 
         Set the volume of the filter.
@@ -115,7 +116,7 @@ class Filters(filters_.Filters):
         self,
         band: filters_.BandType,
         gain: float,
-    ) -> Filters:
+    ) -> Self:
         """Add Equalizer.
 
         Add a new equalizer band, with appropriate gain.
@@ -131,7 +132,7 @@ class Filters(filters_.Filters):
 
         return self
 
-    def remove_equalizer(self, band: filters_.BandType) -> Filters:
+    def remove_equalizer(self, band: filters_.BandType) -> Self:
         """Remove Equalizer.
 
         Remove a equalizer via its band.
@@ -148,7 +149,7 @@ class Filters(filters_.Filters):
 
         raise IndexError("No values found.")
 
-    def clear_equalizer(self) -> Filters:
+    def clear_equalizer(self) -> Self:
         """Clear Equalizer.
 
         Clear all equalizer bands from the filter.
@@ -166,7 +167,7 @@ class Filters(filters_.Filters):
         mono_level: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
         filter_band: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
         filter_width: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
-    ) -> Filters:
+    ) -> Self:
         """Set Karaoke.
 
         Set karaoke values.
@@ -200,7 +201,7 @@ class Filters(filters_.Filters):
 
         return self
 
-    def clear_karaoke(self) -> Filters:
+    def clear_karaoke(self) -> Self:
         """Clear Karaoke.
 
         Clear all karaoke values from the filter.
@@ -216,7 +217,7 @@ class Filters(filters_.Filters):
         speed: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
         pitch: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
         rate: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
-    ) -> Filters:
+    ) -> Self:
         """Set Timescale.
 
         Set timescale values.
@@ -241,7 +242,7 @@ class Filters(filters_.Filters):
 
         return self
 
-    def clear_timescale(self) -> Filters:
+    def clear_timescale(self) -> Self:
         """Clear Timescale.
 
         Clear all timescale values from the filter.
@@ -256,7 +257,7 @@ class Filters(filters_.Filters):
         *,
         frequency: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
         depth: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
-    ) -> Filters:
+    ) -> Self:
         """Set Tremolo.
 
         Set tremolo values.
@@ -280,7 +281,7 @@ class Filters(filters_.Filters):
 
         return self
 
-    def clear_tremolo(self) -> Filters:
+    def clear_tremolo(self) -> Self:
         """Clear Tremolo.
 
         Clear all tremolo values from the filter.
@@ -295,7 +296,7 @@ class Filters(filters_.Filters):
         *,
         frequency: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
         depth: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
-    ) -> Filters:
+    ) -> Self:
         """Set Vibrato.
 
         Set vibrato values.
@@ -320,7 +321,7 @@ class Filters(filters_.Filters):
 
         return self
 
-    def clear_vibrato(self) -> Filters:
+    def clear_vibrato(self) -> Self:
         """Clear Vibrato.
 
         Clear all vibrato values from the filter.
@@ -334,7 +335,7 @@ class Filters(filters_.Filters):
         self,
         *,
         rotation_hz: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
-    ) -> Filters:
+    ) -> Self:
         """Set Rotation.
 
         Set rotation values.
@@ -355,7 +356,7 @@ class Filters(filters_.Filters):
 
         return self
 
-    def clear_rotation(self) -> Filters:
+    def clear_rotation(self) -> Self:
         """Clear Rotation.
 
         Clear all rotation values from the filter.
@@ -376,7 +377,7 @@ class Filters(filters_.Filters):
         tan_scale: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
         offset: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
         scale: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
-    ) -> Filters:
+    ) -> Self:
         """Set Distortion.
 
         Set distortion values.
@@ -437,7 +438,7 @@ class Filters(filters_.Filters):
 
         return self
 
-    def clear_distortion(self) -> Filters:
+    def clear_distortion(self) -> Self:
         """Clear Distortion.
 
         Clear all distortion values from the filter.
@@ -454,7 +455,7 @@ class Filters(filters_.Filters):
         left_to_right: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
         right_to_left: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
         right_to_right: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
-    ) -> Filters:
+    ) -> Self:
         """Set Channel Mix.
 
         Set tremolo values.
@@ -491,7 +492,7 @@ class Filters(filters_.Filters):
 
         return self
 
-    def clear_channel_mix(self) -> Filters:
+    def clear_channel_mix(self) -> Self:
         """Clear Channel Mix.
 
         Clear all channel mix values from the filter.
@@ -505,7 +506,7 @@ class Filters(filters_.Filters):
         self,
         *,
         smoothing: hikari.UndefinedNoneOr[float] = hikari.UNDEFINED,
-    ) -> Filters:
+    ) -> Self:
         """Set Low Pass.
 
         Set low pass values.
@@ -526,7 +527,7 @@ class Filters(filters_.Filters):
 
         return self
 
-    def clear_low_pass(self) -> Filters:
+    def clear_low_pass(self) -> Self:
         """Clear Low Pass.
 
         Clear all low pass values from the filter.
@@ -539,7 +540,7 @@ class Filters(filters_.Filters):
     def set_plugin_filters(
         self,
         plugin_filters: typing.Mapping[str, typing.Any] = {},
-    ) -> Filters:
+    ) -> Self:
         """Set Plugin Filters.
 
         Set the filters for plugins.
@@ -551,6 +552,45 @@ class Filters(filters_.Filters):
         """
         self._plugin_filters = plugin_filters
         return self
+
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Filters":
+        equalizer: list[Equalizer] = []
+        if payload.get("equalizer", None) is not None:
+            for eq in payload["equalizer"]:
+                equalizer.append(Equalizer.from_payload(eq))
+
+        return Filters(
+            volume=payload.get("volume", None),
+            equalizer=equalizer,
+            karaoke=Karaoke.from_payload(payload["karaoke"])
+            if payload.get("karaoke", None)
+            else None,
+            timescale=Timescale.from_payload(payload["timescale"])
+            if payload.get("timescale", None)
+            else None,
+            tremolo=Tremolo.from_payload(payload["tremolo"])
+            if payload.get("tremolo", None)
+            else None,
+            vibrato=Vibrato.from_payload(payload["vibrato"])
+            if payload.get("vibrato", None)
+            else None,
+            rotation=Rotation.from_payload(payload["rotation"])
+            if payload.get("rotation", None)
+            else None,
+            distortion=Distortion.from_payload(payload["distortion"])
+            if payload.get("distortion", None)
+            else None,
+            channel_mix=ChannelMix.from_payload(payload["channelMix"])
+            if payload.get("channelMix", None)
+            else None,
+            low_pass=LowPass.from_payload(payload["lowPass"])
+            if payload.get("lowPass", None)
+            else None,
+            plugin_filters=payload.get("pluginFilters", None),
+        )
 
 
 class Equalizer(filters_.Equalizer):
@@ -566,6 +606,12 @@ class Equalizer(filters_.Equalizer):
 
         self._band = band
         self._gain = gain
+
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Equalizer":
+        return Equalizer(filters_.BandType(payload["band"]), payload["gain"])
 
 
 class Karaoke(filters_.Karaoke):
@@ -593,6 +639,17 @@ class Karaoke(filters_.Karaoke):
         self._filter_band = filter_band
         self._filter_width = filter_width
 
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Karaoke":
+        return Karaoke(
+            payload.get("level", None),
+            payload.get("monoLevel", None),
+            payload.get("filterBand", None),
+            payload.get("filterWidth", None),
+        )
+
 
 class Timescale(filters_.Timescale):
     def __init__(
@@ -612,6 +669,16 @@ class Timescale(filters_.Timescale):
         self._pitch = pitch
         self._rate = rate
 
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Timescale":
+        return Timescale(
+            payload.get("speed", None),
+            payload.get("pitch", None),
+            payload.get("rate", None),
+        )
+
 
 class Tremolo(filters_.Tremolo):
     def __init__(self, frequency: float | None, depth: float | None) -> None:
@@ -626,6 +693,16 @@ class Tremolo(filters_.Tremolo):
 
         self._frequency = frequency
         self._depth = depth
+
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Tremolo":
+        """Build tremolo filter from payload."""
+        return Tremolo(
+            payload.get("frequency", None),
+            payload.get("depth", None),
+        )
 
 
 class Vibrato(filters_.Vibrato):
@@ -645,10 +722,29 @@ class Vibrato(filters_.Vibrato):
         self._frequency = frequency
         self._depth = depth
 
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Vibrato":
+        """Build vibrato filter from payload."""
+        return Vibrato(
+            payload.get("frequency", None),
+            payload.get("depth", None),
+        )
+
 
 class Rotation(filters_.Rotation):
     def __init__(self, rotation_hz: float | None) -> None:
         self._rotation_hz = rotation_hz
+
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Rotation":
+        """Build rotation filter from payload."""
+        return Rotation(
+            payload.get("rotationHz", None),
+        )
 
 
 class Distortion(filters_.Distortion):
@@ -671,6 +767,22 @@ class Distortion(filters_.Distortion):
         self._tan_scale = tan_scale
         self._offset = offset
         self._scale = scale
+
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Distortion":
+        """Build distortion filter from payload."""
+        return Distortion(
+            payload.get("sinOffset", None),
+            payload.get("sinScale", None),
+            payload.get("cosOffset", None),
+            payload.get("cosScale", None),
+            payload.get("tanOffset", None),
+            payload.get("tanScale", None),
+            payload.get("offset", None),
+            payload.get("scale", None),
+        )
 
 
 class ChannelMix(filters_.ChannelMix):
@@ -710,6 +822,18 @@ class ChannelMix(filters_.ChannelMix):
         self._right_to_left = right_to_left
         self._right_to_right = right_to_right
 
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "ChannelMix":
+        """Build channel mix filter from payload."""
+        return ChannelMix(
+            payload.get("leftToLeft", None),
+            payload.get("leftToRight", None),
+            payload.get("rightToLeft", None),
+            payload.get("rightToRight", None),
+        )
+
 
 class LowPass(filters_.LowPass):
     def __init__(
@@ -720,3 +844,12 @@ class LowPass(filters_.LowPass):
             raise ValueError("Frequency must be at or above 1.")
 
         self._smoothing = smoothing
+
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "LowPass":
+        """Build low pass filter from payload."""
+        return LowPass(
+            payload.get("smoothing", None),
+        )

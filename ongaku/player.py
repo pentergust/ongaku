@@ -10,6 +10,7 @@ from asyncio import TimeoutError
 from asyncio import gather
 
 import hikari
+from typing_extensions import Self
 
 from ongaku import errors
 from ongaku import events
@@ -991,7 +992,7 @@ class Player:
 
         return self._loop
 
-    async def transfer(self, session: Session) -> Player:
+    async def transfer(self, session: Session) -> Self:
         """Transfer.
 
         Transfer this player to another session.

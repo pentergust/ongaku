@@ -3,14 +3,15 @@
 The session abstract classes.
 """
 
-import abc
 import enum
 import typing
+
+from ongaku.abc.payload import PayloadObject
 
 __all__ = ("Session", "SessionStatus")
 
 
-class Session(abc.ABC):
+class Session(PayloadObject):
     """
     Session information.
 

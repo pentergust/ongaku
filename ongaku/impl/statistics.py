@@ -12,6 +12,84 @@ from ongaku.abc import statistics as statistics_
 __all__ = ("Cpu", "FrameStatistics", "Memory", "Statistics")
 
 
+class Memory(statistics_.Memory):
+    def __init__(
+        self, free: int, used: int, allocated: int, reservable: int
+    ) -> None:
+        self._free = free
+        self._used = used
+        self._allocated = allocated
+        self._reservable = reservable
+
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Memory":
+        """Build Memory Statistics from payload.
+
+        Raises
+        ------
+        TypeError
+            Raised when the payload could not be turned into a mapping.
+        KeyError
+            Raised when a value was not found in the payload.
+        """
+        return Memory(
+            payload["free"],
+            payload["used"],
+            payload["allocated"],
+            payload["reservable"],
+        )
+
+
+class Cpu(statistics_.Cpu):
+    def __init__(
+        self, cores: int, system_load: float, lavalink_load: float
+    ) -> None:
+        self._cores = cores
+        self._system_load = system_load
+        self._lavalink_load = lavalink_load
+
+    @classmethod
+    def _from_payload(cls, payload: typing.Mapping[str, typing.Any]) -> "Cpu":
+        """Build Cpu Statistics from payload.
+
+        Raises
+        ------
+        TypeError
+            Raised when the payload could not be turned into a mapping.
+        KeyError
+            Raised when a value was not found in the payload.
+        """
+        return Cpu(
+            payload["cores"], payload["systemLoad"], payload["lavalinkLoad"]
+        )
+
+
+class FrameStatistics(statistics_.FrameStatistics):
+    def __init__(self, sent: int, nulled: int, deficit: int) -> None:
+        self._sent = sent
+        self._nulled = nulled
+        self._deficit = deficit
+
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "FrameStatistics":
+        """Build Frame Statistics from payload.
+
+        Raises
+        ------
+        TypeError
+            Raised when the payload could not be turned into a mapping.
+        KeyError
+            Raised when a value was not found in the payload.
+        """
+        return FrameStatistics(
+            payload["sent"], payload["nulled"], payload["deficit"]
+        )
+
+
 class Statistics(statistics_.Statistics):
     __slots__: typing.Sequence[str] = (
         "_cpu",
@@ -68,28 +146,26 @@ class Statistics(statistics_.Statistics):
         """The frame statistics of the session."""
         return self._frame_statistics
 
+    @classmethod
+    def _from_payload(
+        cls, payload: typing.Mapping[str, typing.Any]
+    ) -> "Statistics":
+        """Build Statistics from payload.
 
-class Memory(statistics_.Memory):
-    def __init__(
-        self, free: int, used: int, allocated: int, reservable: int
-    ) -> None:
-        self._free = free
-        self._used = used
-        self._allocated = allocated
-        self._reservable = reservable
-
-
-class Cpu(statistics_.Cpu):
-    def __init__(
-        self, cores: int, system_load: float, lavalink_load: float
-    ) -> None:
-        self._cores = cores
-        self._system_load = system_load
-        self._lavalink_load = lavalink_load
-
-
-class FrameStatistics(statistics_.FrameStatistics):
-    def __init__(self, sent: int, nulled: int, deficit: int) -> None:
-        self._sent = sent
-        self._nulled = nulled
-        self._deficit = deficit
+        Raises
+        ------
+        TypeError
+            Raised when the payload could not be turned into a mapping.
+        KeyError
+            Raised when a value was not found in the payload.
+        """
+        return Statistics(
+            payload["players"],
+            payload["playingPlayers"],
+            payload["uptime"],
+            Memory.from_payload(payload["memory"]),
+            Cpu.from_payload(payload["cpu"]),
+            FrameStatistics.from_payload(payload["frameStats"])
+            if payload.get("frameStats", None) is not None
+            else None,
+        )
