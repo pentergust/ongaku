@@ -4,6 +4,7 @@ The playlist implemented classes.
 """
 
 import typing
+from dataclasses import dataclass
 
 from ongaku.impl.payload import PayloadObject
 from ongaku.impl.track import Track
@@ -11,6 +12,7 @@ from ongaku.impl.track import Track
 __all__ = ("Playlist", "PlaylistInfo")
 
 
+@dataclass(order=True, frozen=True, slots=True)
 class PlaylistInfo(PayloadObject):
     """Playlist information.
 
@@ -19,11 +21,11 @@ class PlaylistInfo(PayloadObject):
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#playlist-info)
     """
 
-    __slots__ = ("_name", "_selected_track")
+    name: str
+    """The name of the playlist."""
 
-    def __init__(self, name: str, selected_track: int) -> None:
-        self._name = name
-        self._selected_track = selected_track
+    selected_track: int
+    """The selected track of the playlist (`-1` if no track is selected)."""
 
     @classmethod
     def _from_payload(
@@ -40,68 +42,30 @@ class PlaylistInfo(PayloadObject):
         """
         return PlaylistInfo(payload["name"], payload["selectedTrack"])
 
-    @property
-    def name(self) -> str:
-        """The name of the playlist."""
-        return self._name
 
-    @property
-    def selected_track(self) -> int:
-        """The selected track of the playlist (`-1` if no track is selected)."""
-        return self._selected_track
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, PlaylistInfo):
-            return False
-
-        if self.name != other.name:
-            return False
-
-        return self.selected_track == other.selected_track
-
-
+@dataclass(order=True, frozen=True, slots=True)
 class Playlist(PayloadObject):
-    """
-    Playlist.
+    """Playlist.
 
     The playlist object.
 
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#playlist-result-data)
     """
 
-    __slots__: typing.Sequence[str] = (
-        "_info",
-        "_plugin_info",
-        "_tracks",
-    )
+    info: PlaylistInfo
+    """The info of the playlist."""
 
-    def __init__(
-        self,
-        info: PlaylistInfo,
-        tracks: typing.Sequence[Track],
-        plugin_info: typing.Mapping[str, typing.Any],
-    ) -> None:
-        self._info = info
-        self._tracks = tracks
-        self._plugin_info = plugin_info
+    tracks: typing.Sequence[Track]
+    """The tracks in this playlist."""
+
+    plugin_info: typing.Mapping[str, typing.Any]
+    """Addition playlist info provided by plugins."""
 
     @classmethod
     def _from_payload(
         cls, payload: typing.Mapping[str, typing.Any]
     ) -> "Playlist":
-        """Build Playlist.
-
-        Builds a [`Playlist`][ongaku.abc.playlist.Playlist] object, from a payload.
-
-        Parameters
-        ----------
-        payload
-            The payload you provide.
-
-        Returns
-        -------
-        playlist_.Playlist
-            The object from the payload.
+        """Build Playlist from payload.
 
         Raises
         ------
@@ -119,30 +83,3 @@ class Playlist(PayloadObject):
             tracks,
             payload["pluginInfo"],
         )
-
-    @property
-    def info(self) -> PlaylistInfo:
-        """The info of the playlist."""
-        return self._info
-
-    @property
-    def tracks(self) -> typing.Sequence[Track]:
-        """The tracks in this playlist."""
-        return self._tracks
-
-    @property
-    def plugin_info(self) -> typing.Mapping[str, typing.Any]:
-        """Addition playlist info provided by plugins."""
-        return self._plugin_info
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Playlist):
-            return False
-
-        if self.info != other.info:
-            return False
-
-        if self.tracks != other.tracks:
-            return False
-
-        return self.plugin_info == other.plugin_info

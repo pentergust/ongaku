@@ -3,29 +3,32 @@
 The error implemented classes.
 """
 
-import abc
+from __future__ import annotations
+
 import enum
 import typing
 
 import hikari
 
-from ongaku.client import Client
 from ongaku.errors import ExceptionError
 from ongaku.errors import SeverityType
 from ongaku.impl.payload import PayloadObject
-from ongaku.impl.player import State
-from ongaku.impl.statistics import Cpu
-from ongaku.impl.statistics import FrameStatistics
-from ongaku.impl.statistics import Memory
-from ongaku.impl.track import Track
-from ongaku.session import Session
+
+if typing.TYPE_CHECKING:
+    from ongaku.client import Client
+    from ongaku.impl.player import State
+    from ongaku.impl.statistics import Cpu
+    from ongaku.impl.statistics import FrameStatistics
+    from ongaku.impl.statistics import Memory
+    from ongaku.impl.track import Track
+    from ongaku.session import Session
+
 
 __all__ = ("OngakuEvent", "PayloadEvent", "ReadyEvent", "TrackEndReasonType")
 
 
 class TrackEndReasonType(str, enum.Enum):
-    """
-    Track end reason type.
+    """Track end reason type.
 
     The track end reason type for the track that was just playing.
 
@@ -44,13 +47,16 @@ class TrackEndReasonType(str, enum.Enum):
     """The track was cleaned up."""
 
 
-class OngakuEvent(hikari.Event, abc.ABC):
+class OngakuEvent(hikari.Event):
     """Ongaku Event.
 
     The base ongaku event, that adds the client and session to all events.
     """
 
     __slots__: typing.Sequence[str] = ("_app", "_client", "_session")
+    _client: Client
+    _session: Session
+    _app: hikari.RESTAware
 
     @property
     def client(self) -> Client:
@@ -77,8 +83,7 @@ class OngakuEvent(hikari.Event, abc.ABC):
 
 
 class PayloadEvent(OngakuEvent):
-    """
-    Payload Event.
+    """Payload Event.
 
     The event that is dispatched each time a message is received from the websocket.
     """
@@ -115,8 +120,7 @@ class PayloadEvent(OngakuEvent):
 
 
 class ReadyEvent(OngakuEvent):
-    """
-    Ready Event.
+    """Ready Event.
 
     Dispatched by Lavalink upon successful connection and authorization. Contains fields determining if resuming was successful, as well as the session id.
 
@@ -170,8 +174,7 @@ class ReadyEvent(OngakuEvent):
 
 
 class PlayerUpdateEvent(OngakuEvent):
-    """
-    Player Update Event.
+    """Player Update Event.
 
     Dispatched every x seconds (configurable in `application.yml`) with the current state of the player.
 
@@ -225,8 +228,7 @@ class PlayerUpdateEvent(OngakuEvent):
 
 
 class StatisticsEvent(OngakuEvent):
-    """
-    Statistics Event.
+    """Statistics Event.
 
     A collection of statistics sent every minute.
 
@@ -320,8 +322,7 @@ class StatisticsEvent(OngakuEvent):
 
 
 class TrackStartEvent(OngakuEvent):
-    """
-    Track start event.
+    """Track start event.
 
     Dispatched when a track starts playing.
 
@@ -375,8 +376,7 @@ class TrackStartEvent(OngakuEvent):
 
 
 class TrackEndEvent(OngakuEvent):
-    """
-    Track end event.
+    """Track end event.
 
     Dispatched when a track ends.
 
@@ -488,8 +488,7 @@ class TrackExceptionError(ExceptionError, PayloadObject):
 
 
 class TrackExceptionEvent(OngakuEvent):
-    """
-    Track exception event.
+    """Track exception event.
 
     Dispatched when a track throws an exception.
 
@@ -556,19 +555,14 @@ class TrackExceptionEvent(OngakuEvent):
 
 
 class TrackStuckEvent(OngakuEvent):
-    """
-    Track stuck event.
+    """Track stuck event.
 
     Dispatched when a track gets stuck while playing.
 
     ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/websocket.html#trackstuckevent)
     """
 
-    __slots__: typing.Sequence[str] = (
-        "_guild_id",
-        "_threshold_ms",
-        "_track",
-    )
+    __slots__: typing.Sequence[str] = ("_guild_id", "_threshold_ms", "_track")
 
     def __init__(
         self,
@@ -628,20 +622,14 @@ class TrackStuckEvent(OngakuEvent):
 
 
 class WebsocketClosedEvent(OngakuEvent):
-    """
-    Websocket Closed Event.
+    """Websocket Closed Event.
 
     Dispatched when an audio WebSocket (to Discord) is closed. This can happen for various reasons (normal and abnormal), e.g. when using an expired voice server update. 4xxx codes are usually bad. See the [Discord Docs](https://discord.com/developers/docs/topics/opcodes-and-status-codes#voice-voice-close-event-codes).
 
     ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/websocket.html#websocketclosedevent)
     """
 
-    __slots__: typing.Sequence[str] = (
-        "_by_remote",
-        "_code",
-        "_guild_id",
-        "_reason",
-    )
+    __slots__ = ("_by_remote", "_code", "_guild_id", "_reason")
 
     def __init__(
         self,
@@ -718,8 +706,7 @@ class WebsocketClosedEvent(OngakuEvent):
 
 
 class QueueEmptyEvent(OngakuEvent):
-    """
-    Queue empty event.
+    """Queue empty event.
 
     Dispatched when the player finishes all the tracks in the queue.
     """
@@ -771,8 +758,7 @@ class QueueEmptyEvent(OngakuEvent):
 
 
 class QueueNextEvent(OngakuEvent):
-    """
-    Queue next event.
+    """Queue next event.
 
     Dispatched when the player starts playing a new track.
     """

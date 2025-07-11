@@ -3,6 +3,8 @@
 The base client for ongaku.
 """
 
+from __future__ import annotations
+
 import typing
 
 import aiohttp
@@ -10,7 +12,8 @@ import hikari
 from typing_extensions import Self
 
 from ongaku import errors
-from ongaku.impl.handlers import SessionHandler
+from ongaku.handler.abc import BaseSessionHandler
+from ongaku.handler.base import SessionHandler
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
 from ongaku.player import Player
@@ -67,7 +70,7 @@ class Client:
         self,
         app: hikari.GatewayBotAware,
         *,
-        session_handler: type[SessionHandler] = SessionHandler,
+        session_handler: type[BaseSessionHandler] = SessionHandler,
         logs: str | int = "INFO",
         attempts: int = 3,
     ) -> None:
@@ -78,9 +81,7 @@ class Client:
         self._client_session: aiohttp.ClientSession | None = None
 
         self._rest_client = RESTClient(self)
-
         self._is_alive = False
-
         self._session_handler = session_handler(self)
 
         app.event_manager.subscribe(hikari.StartedEvent, self._start_event)
@@ -91,7 +92,7 @@ class Client:
         cls,
         client: arc.GatewayClient,
         *,
-        session_handler: type[SessionHandler] = SessionHandler,
+        session_handler: type[BaseSessionHandler] = SessionHandler,
         logs: str | int = "INFO",
         attempts: int = 3,
     ) -> Self:
@@ -134,7 +135,7 @@ class Client:
         cls,
         client: tanjun.abc.Client,
         *,
-        session_handler: type[SessionHandler] = SessionHandler,
+        session_handler: type[BaseSessionHandler] = SessionHandler,
         logs: str | int = "INFO",
         attempts: int = 3,
     ) -> Self:

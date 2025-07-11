@@ -3,6 +3,8 @@
 The player function, for all player related things.
 """
 
+from __future__ import annotations
+
 import random
 import typing
 from asyncio import TimeoutError
@@ -14,15 +16,18 @@ from typing_extensions import Self
 from ongaku import errors
 from ongaku import events
 from ongaku.events import TrackEndReasonType
-from ongaku.impl.filters import Filters
-from ongaku.impl.player import State
 from ongaku.impl.player import Voice
 from ongaku.impl.playlist import Playlist
 from ongaku.impl.track import Track
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
 from ongaku.internal.types import RequestorT
-from ongaku.session import Session
+
+if typing.TYPE_CHECKING:
+    from ongaku.impl.filters import Filters
+    from ongaku.impl.player import State
+    from ongaku.session import Session
+
 
 _logger = logger.getChild("player")
 
@@ -403,7 +408,7 @@ class Player:
 
         if track:
             if requestor:
-                track._requestor = hikari.Snowflake(requestor)
+                track.requestor = hikari.Snowflake(requestor)
 
             self._queue.insert(0, track)
 
@@ -455,7 +460,7 @@ class Player:
 
         if isinstance(tracks, Track):
             if new_requestor:
-                tracks._requestor = new_requestor
+                tracks.requestor = new_requestor
             self._queue.append(tracks)
             track_count = 1
             return
@@ -465,7 +470,7 @@ class Player:
 
         for track in tracks:
             if new_requestor:
-                track._requestor = new_requestor
+                track.requestor = new_requestor
             self._queue.append(track)
             track_count += 1
 

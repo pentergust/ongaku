@@ -44,6 +44,8 @@ from ongaku.events import TrackExceptionEvent
 from ongaku.events import TrackStartEvent
 from ongaku.events import TrackStuckEvent
 from ongaku.events import WebsocketClosedEvent
+from ongaku.handler.abc import BaseSessionHandler
+from ongaku.handler.base import SessionHandler
 from ongaku.impl.filters import BandType
 from ongaku.impl.filters import Filters
 from ongaku.impl.info import Info
@@ -103,6 +105,9 @@ __all__ = (  # noqa: RUF022
     "TrackStartEvent",
     "TrackStuckEvent",
     "WebsocketClosedEvent",
+    # Handlers
+    "BaseSessionHandler",
+    "SessionHandler",
     # Impl
     "BandType",
     "Filters",

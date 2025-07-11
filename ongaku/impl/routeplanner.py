@@ -6,6 +6,7 @@ The routeplanner implemented classes.
 import datetime
 import enum
 import typing
+from dataclasses import dataclass
 
 from ongaku.impl.payload import PayloadObject
 
@@ -51,20 +52,20 @@ class IPBlockType(str, enum.Enum):
     """The ipv6 block type"""
 
 
+@dataclass(order=True, frozen=True, slots=True)
 class IPBlock(PayloadObject):
-    """
-    Route Planner IP Block.
+    """Route Planner IP Block.
 
     All of the information about the IP Block.
 
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#ip-block-object)
     """
 
-    __slots__ = ("_size", "_type")
+    type: IPBlockType
+    """The type of the ip block."""
 
-    def __init__(self, type: IPBlockType, size: str) -> None:
-        self._type = type
-        self._size = size
+    size: str
+    """The size of the ip block."""
 
     @classmethod
     def _from_payload(
@@ -84,40 +85,22 @@ class IPBlock(PayloadObject):
             payload["size"],
         )
 
-    @property
-    def type(self) -> IPBlockType:
-        """The type of the ip block."""
-        return self._type
 
-    @property
-    def size(self) -> str:
-        """The size of the ip block."""
-        return self._size
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, IPBlock):
-            return False
-
-        if self.type != other.type:
-            return False
-
-        return self.size == other.size
-
-
+@dataclass(order=True, frozen=True, slots=True)
 class FailingAddress(PayloadObject):
     """Failing address.
 
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#failing-address-object)
     """
 
-    __slots__ = ("_address", "_time", "_timestamp")
+    address: str
+    """The failing address."""
 
-    def __init__(
-        self, address: str, timestamp: datetime.datetime, time: str
-    ) -> None:
-        self._address = address
-        self._timestamp = timestamp
-        self._time = time
+    timestamp: datetime.datetime
+    """The datetime object of when the address failed."""
+
+    time: str
+    """The timestamp when the address failed as a pretty string."""
 
     @classmethod
     def _from_payload(
@@ -141,70 +124,36 @@ class FailingAddress(PayloadObject):
             payload["failingTime"],
         )
 
-    @property
-    def address(self) -> str:
-        """The failing address."""
-        return self._address
 
-    @property
-    def timestamp(self) -> datetime.datetime:
-        """The datetime object of when the address failed."""
-        return self._timestamp
-
-    @property
-    def time(self) -> str:
-        """The timestamp when the address failed as a pretty string."""
-        return self._time
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, FailingAddress):
-            return False
-
-        if self.address != other.address:
-            return False
-
-        if self.timestamp != other.timestamp:
-            return False
-
-        return self.time == other.time
-
-
+@dataclass(order=True, frozen=True, slots=True)
 class RoutePlannerDetails(PayloadObject):
-    """
-    Route Planner details.
+    """Route Planner details.
 
     All of the information about the failing addresses.
 
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#details-object)
     """
 
-    __slots__: typing.Sequence[str] = (
-        "_block_index",
-        "_current_address",
-        "_current_address_index",
-        "_failing_addresses",
-        "_ip_block",
-        "_ip_index",
-        "_rotate_index",
-    )
+    ip_block: IPBlock
+    """The ip block being used."""
 
-    def __init__(
-        self,
-        ip_block: IPBlock,
-        failing_addresses: typing.Sequence[FailingAddress],
-        rotate_index: str | None,
-        ip_index: str | None,
-        current_address: str | None,
-        current_address_index: str | None,
-        block_index: str | None,
-    ) -> None:
-        self._ip_block = ip_block
-        self._failing_addresses = failing_addresses
-        self._rotate_index = rotate_index
-        self._ip_index = ip_index
-        self._current_address = current_address
-        self._current_address_index = current_address_index
-        self._block_index = block_index
+    failing_addresses: typing.Sequence[FailingAddress]
+    """The failing addresses."""
+
+    rotate_index: str | None
+    """The number of rotations."""
+
+    ip_index: str | None
+    """The current offset in the block."""
+
+    current_address: str | None
+    """The current address being used."""
+
+    current_address_index: str | None
+    """The current offset in the ip block."""
+
+    block_index: str | None
+    """The current offset in the ip block."""
 
     @classmethod
     def _from_payload(
@@ -235,84 +184,21 @@ class RoutePlannerDetails(PayloadObject):
             payload.get("blockIndex", None),
         )
 
-    @property
-    def ip_block(self) -> IPBlock:
-        """The ip block being used."""
-        return self._ip_block
 
-    @property
-    def failing_addresses(self) -> typing.Sequence[FailingAddress]:
-        """The failing addresses."""
-        return self._failing_addresses
-
-    @property
-    def rotate_index(self) -> str | None:
-        """The number of rotations."""
-        return self._rotate_index
-
-    @property
-    def ip_index(self) -> str | None:
-        """The current offset in the block."""
-        return self._ip_index
-
-    @property
-    def current_address(self) -> str | None:
-        """The current address being used."""
-        return self._current_address
-
-    @property
-    def current_address_index(self) -> str | None:
-        """The current offset in the ip block."""
-        return self._current_address_index
-
-    @property
-    def block_index(self) -> str | None:
-        """The current offset in the ip block."""
-        return self._block_index
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, RoutePlannerDetails):
-            return False
-
-        if self.ip_block != other.ip_block:
-            return False
-
-        if self.failing_addresses != other.failing_addresses:
-            return False
-
-        if self.rotate_index != other.rotate_index:
-            return False
-
-        if self.ip_index != other.ip_index:
-            return False
-
-        if self.current_address != other.current_address:
-            return False
-
-        if self.current_address_index != other.current_address_index:
-            return False
-
-        return self.block_index == other.block_index
-
-
+@dataclass(order=True, frozen=True, slots=True)
 class RoutePlannerStatus(PayloadObject):
-    """
-    Route Planner Status Object.
+    """Route Planner Status Object.
 
     The status of the route-planner.
 
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#get-routeplanner-status)
     """
 
-    __slots__: typing.Sequence[str] = ("_cls", "_details")
+    cls: RoutePlannerType
+    """The name of the RoutePlanner implementation being used by this server."""
 
-    def __init__(
-        self,
-        cls: RoutePlannerType,
-        details: RoutePlannerDetails,
-    ) -> None:
-        self._cls = cls
-        self._details = details
+    details: RoutePlannerDetails
+    """The status details of the RoutePlanner."""
 
     @classmethod
     def _from_payload(
@@ -331,22 +217,3 @@ class RoutePlannerStatus(PayloadObject):
             RoutePlannerType(payload["class"]),
             RoutePlannerDetails.from_payload(payload["details"]),
         )
-
-    @property
-    def cls(self) -> RoutePlannerType:
-        """The name of the RoutePlanner implementation being used by this server."""
-        return self._cls
-
-    @property
-    def details(self) -> RoutePlannerDetails:
-        """The status details of the RoutePlanner."""
-        return self._details
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, RoutePlannerStatus):
-            return False
-
-        if self.cls != other.cls:
-            return False
-
-        return self.details == other.details

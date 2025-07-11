@@ -5,6 +5,7 @@ The session implemented classes.
 
 import enum
 import typing
+from dataclasses import dataclass
 
 from ongaku.impl.payload import PayloadObject
 
@@ -40,6 +41,7 @@ class WebsocketEvent(str, enum.Enum):
     WEBSOCKET_CLOSED_EVENT = "WebSocketClosedEvent"
 
 
+@dataclass(order=True, frozen=True, slots=True)
 class Session(PayloadObject):
     """Session information.
 
@@ -48,11 +50,11 @@ class Session(PayloadObject):
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#update-session)
     """
 
-    __slots__ = ("_resuming", "_timeout")
+    resuming: bool
+    """Whether resuming is enabled for this session or not."""
 
-    def __init__(self, resuming: bool, timeout: int) -> None:
-        self._resuming = resuming
-        self._timeout = timeout
+    timeout: int
+    """The timeout in seconds."""
 
     @classmethod
     def _from_payload(
@@ -68,22 +70,3 @@ class Session(PayloadObject):
             Raised when a value was not found in the payload.
         """
         return Session(payload["resuming"], payload["timeout"])
-
-    @property
-    def resuming(self) -> bool:
-        """Whether resuming is enabled for this session or not."""
-        return self._resuming
-
-    @property
-    def timeout(self) -> int:
-        """The timeout in seconds."""
-        return self._timeout
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Session):
-            return False
-
-        if self.resuming != other.resuming:
-            return False
-
-        return self.timeout == other.timeout

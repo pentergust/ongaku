@@ -7,7 +7,7 @@ from abc import abstractmethod
 import orjson
 from typing_extensions import Self
 
-__all__ = ("PayloadMappingT", "PayloadObject", "PayloadSequenceT")
+__all__ = ("PayloadMappingT", "PayloadObject")
 
 PayloadMappingT: typing.TypeAlias = (
     typing.Mapping[str, typing.Any] | str | bytes
@@ -15,12 +15,6 @@ PayloadMappingT: typing.TypeAlias = (
 """Payload Mapping Type. 
 
 Supports string, bytes, or a mapping.
-"""
-
-PayloadSequenceT: typing.TypeAlias = typing.Sequence[typing.Any] | str | bytes
-"""Payload Sequence Type. 
-
-Supports string, bytes, or a sequence.
 """
 
 
@@ -46,5 +40,13 @@ class PayloadObject(ABC):
 
     @classmethod
     def from_payload(cls, payload: PayloadMappingT) -> Self:
-        """Build object instance from payload."""
+        """Build object instance from payload.
+
+        Raises
+        ------
+        TypeError
+            Raised when the payload could not be turned into a mapping.
+        KeyError
+            Raised when a value was not found in the payload.
+        """
         return cls._from_payload(_ensure_mapping(payload))

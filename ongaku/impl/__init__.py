@@ -5,8 +5,6 @@ All implementations of abstract classes.
 
 from ongaku.impl.filters import BandType
 from ongaku.impl.filters import Filters
-from ongaku.impl.handlers import BaseSessionHandler
-from ongaku.impl.handlers import SessionHandler
 from ongaku.impl.info import Git
 from ongaku.impl.info import Info
 from ongaku.impl.info import Plugin
@@ -35,9 +33,6 @@ __all__ = (  # noqa: RUF022
     # .filters
     "BandType",
     "Filters",
-    # .handlers
-    "BaseSessionHandler",
-    "SessionHandler",
     # .info
     "Info",
     "Version",

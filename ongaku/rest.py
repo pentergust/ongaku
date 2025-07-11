@@ -3,16 +3,15 @@
 All REST based actions, happen in here.
 """
 
+from __future__ import annotations
+
 import typing
 
 import hikari
 
 from ongaku import errors
-from ongaku.client import Client
-from ongaku.impl.filters import Filters
 from ongaku.impl.info import Info
 from ongaku.impl.player import Player
-from ongaku.impl.player import Voice
 from ongaku.impl.playlist import Playlist
 from ongaku.impl.routeplanner import RoutePlannerStatus
 from ongaku.impl.session import Session as SessionData
@@ -22,6 +21,12 @@ from ongaku.internal import routes
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
 from ongaku.session import Session
+
+if typing.TYPE_CHECKING:
+    from ongaku.client import Client
+    from ongaku.impl.filters import Filters
+    from ongaku.impl.player import Voice
+
 
 _logger = logger.getChild("rest")
 
@@ -597,7 +602,7 @@ class RESTClient:
                 filters_payload: typing.MutableMapping[str, typing.Any] = {}
 
                 print(filters.plugin_filters)
-                if len(filters.plugin_filters.items()) > 0:
+                if filters.plugin_filters is not None:
                     filters_payload.update(
                         {"pluginFilters": filters.plugin_filters}
                     )
@@ -875,8 +880,8 @@ class RESTClient:
         *,
         resuming: bool | None = None,
         timeout: int | None = None,
-        session: SessionData | None = None,
-    ) -> Session:
+        session: Session | None = None,
+    ) -> SessionData:
         """Update Lavalink session.
 
         Updates the lavalink session.

@@ -3,6 +3,8 @@
 Session related objects.
 """
 
+from __future__ import annotations
+
 import asyncio
 import typing
 
@@ -13,8 +15,6 @@ import orjson
 from ongaku import errors
 from ongaku import events
 from ongaku.__metadata__ import __version__
-from ongaku.client import Client
-from ongaku.impl.handlers import BaseSessionHandler
 from ongaku.impl.player import State
 from ongaku.impl.session import SessionStatus
 from ongaku.impl.session import WebsocketEvent
@@ -24,7 +24,12 @@ from ongaku.impl.track import Track
 from ongaku.internal import types
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
-from ongaku.player import Player
+
+if typing.TYPE_CHECKING:
+    from ongaku.client import Client
+    from ongaku.handler.abc import BaseSessionHandler
+    from ongaku.player import Player
+
 
 _logger = logger.getChild("session")
 

@@ -4,6 +4,7 @@ The track implemented classes.
 """
 
 import typing
+from dataclasses import dataclass
 
 import hikari
 
@@ -12,6 +13,7 @@ from ongaku.impl.payload import PayloadObject
 __all__ = ("Track", "TrackInfo")
 
 
+@dataclass(order=True, frozen=True, slots=True)
 class TrackInfo(PayloadObject):
     """Track information.
 
@@ -20,45 +22,38 @@ class TrackInfo(PayloadObject):
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#track-info)
     """
 
-    __slots__ = (
-        "_artwork_url",
-        "_author",
-        "_identifier",
-        "_is_seekable",
-        "_is_stream",
-        "_isrc",
-        "_length",
-        "_position",
-        "_source_name",
-        "_title",
-        "_uri",
-    )
+    identifier: str
+    """The track identifier."""
 
-    def __init__(
-        self,
-        identifier: str,
-        is_seekable: bool,
-        author: str,
-        length: int,
-        is_stream: bool,
-        position: int,
-        title: str,
-        source_name: str,
-        uri: str | None,
-        artwork_url: str | None,
-        isrc: str | None,
-    ) -> None:
-        self._identifier = identifier
-        self._is_seekable = is_seekable
-        self._author = author
-        self._length = length
-        self._is_stream = is_stream
-        self._position = position
-        self._title = title
-        self._source_name = source_name
-        self._uri = uri
-        self._artwork_url = artwork_url
-        self._isrc = isrc
+    is_seekable: bool
+    """Whether the track is seekable."""
+
+    author: str
+    """The track author."""
+
+    length: int
+    """The track length in milliseconds."""
+
+    is_stream: bool
+    """Whether the track is a stream."""
+
+    position: int
+    """The track position in milliseconds."""
+
+    title: str
+    """The track title."""
+
+    source_name: str
+    """The tracks source name."""
+
+    uri: str | None
+    """The track URI."""
+
+    artwork_url: str | None
+    """The track artwork URL."""
+
+    isrc: str | None
+    """The track ISRC."""
 
     @classmethod
     def _from_payload(
@@ -87,128 +82,34 @@ class TrackInfo(PayloadObject):
             payload.get("isrc", None),
         )
 
-    @property
-    def identifier(self) -> str:
-        """The track identifier."""
-        return self._identifier
 
-    @property
-    def is_seekable(self) -> bool:
-        """Whether the track is seekable."""
-        return self._is_seekable
-
-    @property
-    def author(self) -> str:
-        """The track author."""
-        return self._author
-
-    @property
-    def length(self) -> int:
-        """The track length in milliseconds."""
-        return self._length
-
-    @property
-    def is_stream(self) -> bool:
-        """Whether the track is a stream."""
-        return self._is_stream
-
-    @property
-    def position(self) -> int:
-        """The track position in milliseconds."""
-        return self._position
-
-    @property
-    def title(self) -> str:
-        """The track title."""
-        return self._title
-
-    @property
-    def source_name(self) -> str:
-        """The tracks source name."""
-        return self._source_name
-
-    @property
-    def uri(self) -> str | None:
-        """The track URI."""
-        return self._uri
-
-    @property
-    def artwork_url(self) -> str | None:
-        """The track artwork URL."""
-        return self._artwork_url
-
-    @property
-    def isrc(self) -> str | None:
-        """The track ISRC."""
-        return self._isrc
-
-    def __eq__(self, other: object) -> bool:  # noqa: C901
-        if not isinstance(other, TrackInfo):
-            return False
-
-        if self.identifier != other.identifier:
-            return False
-
-        if self.is_seekable != other.is_seekable:
-            return False
-
-        if self.author != other.author:
-            return False
-
-        if self.length != other.length:
-            return False
-
-        if self.is_stream != other.is_stream:
-            return False
-
-        if self.position != other.position:
-            return False
-
-        if self.title != other.title:
-            return False
-
-        if self.source_name != other.source_name:
-            return False
-
-        if self.uri != other.uri:
-            return False
-
-        if self.artwork_url != other.artwork_url:
-            return False
-
-        return self.isrc == other.isrc
-
-
+@dataclass(order=True, slots=True)
 class Track(PayloadObject):
-    """
-    Track.
+    """Track.
 
     The base track.
 
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#track)
     """
 
-    __slots__: typing.Sequence[str] = (
-        "_encoded",
-        "_info",
-        "_plugin_info",
-        "_requestor",
-        "_user_data",
-    )
+    encoded: str
+    """The BASE-64 encoded track data."""
 
-    def __init__(
-        self,
-        encoded: str,
-        info: TrackInfo,
-        plugin_info: typing.Mapping[str, typing.Any],
-        user_data: typing.Mapping[str, typing.Any],
-        requestor: hikari.Snowflake | None,
-    ) -> None:
-        self._encoded = encoded
-        self._info = info
-        self._plugin_info = plugin_info
-        self._user_data = user_data
-        self._requestor = requestor
+    info: TrackInfo
+    """Information about the track."""
+
+    plugin_info: typing.Mapping[str, typing.Any]
+    """Additional track info provided by plugins."""
+
+    user_data: typing.Mapping[str, typing.Any]
+    """Additional track data.
+
+    !!! warning
+        If you store a value of any type under the name `ongaku_requestor` it will be overridden.
+    """
+
+    requestor: hikari.Snowflake | None
+    """The person who requested this track."""
 
     @classmethod
     def _from_payload(cls, payload: typing.Mapping[str, typing.Any]) -> "Track":
@@ -232,50 +133,3 @@ class Track(PayloadObject):
             user_data,
             hikari.Snowflake(requestor) if requestor else None,
         )
-
-    @property
-    def encoded(self) -> str:
-        """The BASE-64 encoded track data."""
-        return self._encoded
-
-    @property
-    def info(self) -> TrackInfo:
-        """Information about the track."""
-        return self._info
-
-    @property
-    def plugin_info(self) -> typing.Mapping[str, typing.Any]:
-        """Additional track info provided by plugins."""
-        return self._plugin_info
-
-    @property
-    def user_data(self) -> typing.Mapping[str, typing.Any]:
-        """Additional track data.
-
-        !!! warning
-            If you store a value of any type under the name `ongaku_requestor` it will be overridden.
-        """
-        return self._user_data
-
-    @property
-    def requestor(self) -> hikari.Snowflake | None:
-        """The person who requested this track."""
-        return self._requestor
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Track):
-            return False
-
-        if self.encoded != other.encoded:
-            return False
-
-        if self.info != other.info:
-            return False
-
-        if self.plugin_info != other.plugin_info:
-            return False
-
-        if self.user_data != other.user_data:
-            return False
-
-        return self.requestor == other.requestor
