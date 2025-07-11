@@ -5,7 +5,6 @@ The player function, for all player related things.
 
 import random
 import typing
-import typing as t
 from asyncio import TimeoutError
 from asyncio import gather
 
@@ -14,20 +13,16 @@ from typing_extensions import Self
 
 from ongaku import errors
 from ongaku import events
-from ongaku.abc import playlist as playlist_
-from ongaku.abc import track as track_
-from ongaku.abc.events import TrackEndReasonType
-from ongaku.events import PlayerUpdateEvent
-from ongaku.events import TrackEndEvent
+from ongaku.events import TrackEndReasonType
+from ongaku.impl.filters import Filters
+from ongaku.impl.player import State
 from ongaku.impl.player import Voice
+from ongaku.impl.playlist import Playlist
+from ongaku.impl.track import Track
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
-
-if t.TYPE_CHECKING:
-    from ongaku.abc import player as player_
-    from ongaku.abc.filters import Filters
-    from ongaku.internal.types import RequestorT
-    from ongaku.session import Session
+from ongaku.internal.types import RequestorT
+from ongaku.session import Session
 
 _logger = logger.getChild("player")
 
@@ -35,8 +30,7 @@ __all__ = ("Player",)
 
 
 class Player:
-    """
-    Base player.
+    """Base player.
 
     The class that allows the player, to play songs, and more.
 
@@ -76,9 +70,9 @@ class Player:
         self._channel_id = None
         self._is_alive = False
         self._is_paused = True
-        self._voice: player_.Voice | None = None
-        self._state: player_.State | None = None
-        self._queue: typing.MutableSequence[track_.Track] = []
+        self._voice: Voice | None = None
+        self._state: State | None = None
+        self._queue: typing.MutableSequence[Track] = []
         self._filters: Filters | None = None
         self._connected: bool = False
         self._session_id: str | None = None
@@ -87,9 +81,11 @@ class Player:
         self._position: int = 0
         self._loop = False
 
-        self.app.event_manager.subscribe(TrackEndEvent, self._track_end_event)
         self.app.event_manager.subscribe(
-            PlayerUpdateEvent, self._player_update_event
+            events.TrackEndEvent, self._track_end_event
+        )
+        self.app.event_manager.subscribe(
+            events.PlayerUpdateEvent, self._player_update_event
         )
 
     @property
@@ -166,17 +162,17 @@ class Player:
         return self._connected
 
     @property
-    def queue(self) -> t.Sequence[track_.Track]:
+    def queue(self) -> typing.Sequence[Track]:
         """The current queue of tracks."""
         return self._queue
 
     @property
-    def voice(self) -> player_.Voice | None:
+    def voice(self) -> Voice | None:
         """The player's voice state."""
         return self._voice
 
     @property
-    def state(self) -> player_.State | None:
+    def state(self) -> State | None:
         """The player's player state."""
         return self._state
 
@@ -362,7 +358,7 @@ class Player:
 
     async def play(
         self,
-        track: track_.Track | None = None,
+        track: Track | None = None,
         requestor: RequestorT | None = None,
     ) -> None:
         """Play.
@@ -425,7 +421,7 @@ class Player:
 
     def add(
         self,
-        tracks: t.Sequence[track_.Track] | playlist_.Playlist | track_.Track,
+        tracks: typing.Sequence[Track] | Playlist | Track,
         requestor: RequestorT | None = None,
     ) -> None:
         """
@@ -457,14 +453,14 @@ class Player:
 
         track_count = 0
 
-        if isinstance(tracks, track_.Track):
+        if isinstance(tracks, Track):
             if new_requestor:
                 tracks._requestor = new_requestor
             self._queue.append(tracks)
             track_count = 1
             return
 
-        if isinstance(tracks, playlist_.Playlist):
+        if isinstance(tracks, Playlist):
             tracks = tracks.tracks
 
         for track in tracks:
@@ -691,7 +687,7 @@ class Player:
             TRACE_LEVEL, f"Successfully skipped track in {self.guild_id}"
         )
 
-    def remove(self, value: track_.Track | int) -> None:
+    def remove(self, value: Track | int) -> None:
         """
         Remove track.
 
@@ -721,12 +717,10 @@ class Player:
 
         try:
             index = (
-                self._queue.index(value)
-                if isinstance(value, track_.Track)
-                else value
+                self._queue.index(value) if isinstance(value, Track) else value
             )
         except ValueError:
-            if isinstance(value, track_.Track):
+            if isinstance(value, Track):
                 raise errors.PlayerQueueError(
                     f"Failed to remove song: {value.info.title}",
                 )
@@ -737,7 +731,7 @@ class Player:
         try:
             self._queue.pop(index)
         except IndexError:
-            if isinstance(value, track_.Track):
+            if isinstance(value, Track):
                 raise errors.PlayerQueueError(
                     f"Failed to remove song: {value.info.title}",
                 )
@@ -1034,7 +1028,7 @@ class Player:
 
         return new_player
 
-    def _update(self, player: player_.Player) -> None:
+    def _update(self, player: Self) -> None:
         _logger.log(
             TRACE_LEVEL,
             f"Updating player for channel: {self.channel_id} in guild: {self.guild_id}",
@@ -1047,7 +1041,7 @@ class Player:
         self._filters = player.filters
         self._connected = player.state.connected
 
-    async def _track_end_event(self, event: TrackEndEvent) -> None:
+    async def _track_end_event(self, event: events.TrackEndEvent) -> None:
         self.session._get_session_id()
 
         if event.guild_id != self.guild_id:
@@ -1120,7 +1114,9 @@ class Player:
             f"Auto-playing successfully completed for channel: {self.channel_id} in guild: {self.guild_id}",
         )
 
-    async def _player_update_event(self, event: PlayerUpdateEvent) -> None:
+    async def _player_update_event(
+        self, event: events.PlayerUpdateEvent
+    ) -> None:
         if event.guild_id != self.guild_id:
             return
 

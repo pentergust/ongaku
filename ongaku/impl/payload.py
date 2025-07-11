@@ -9,9 +9,6 @@ from typing_extensions import Self
 
 __all__ = ("PayloadMappingT", "PayloadObject", "PayloadSequenceT")
 
-# Type aliases
-# ============
-
 PayloadMappingT: typing.TypeAlias = (
     typing.Mapping[str, typing.Any] | str | bytes
 )
@@ -42,8 +39,8 @@ def _ensure_mapping(
 class PayloadObject(ABC):
     """Object can build from payload."""
 
-    @abstractmethod
     @classmethod
+    @abstractmethod
     def _from_payload(cls, payload: typing.Mapping[str, typing.Any]) -> Self:
         """Build object instance from payload."""
 

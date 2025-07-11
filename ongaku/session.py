@@ -1,5 +1,4 @@
-"""
-Session.
+"""Session.
 
 Session related objects.
 """
@@ -8,27 +7,27 @@ import asyncio
 import typing
 
 import aiohttp
+import hikari
+import orjson
 
 from ongaku import errors
 from ongaku import events
 from ongaku.__metadata__ import __version__
-from ongaku.abc import session as session_
+from ongaku.client import Client
+from ongaku.impl.handlers import BaseSessionHandler
 from ongaku.impl.player import State
+from ongaku.impl.session import SessionStatus
+from ongaku.impl.session import WebsocketEvent
+from ongaku.impl.session import WebsocketOPCode
 from ongaku.impl.statistics import Statistics
 from ongaku.impl.track import Track
-from ongaku.internal.converters import json_loads
+from ongaku.internal import types
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
+from ongaku.player import Player
 
 _logger = logger.getChild("session")
 
-if typing.TYPE_CHECKING:
-    import hikari
-
-    from ongaku.abc import handler as handler_
-    from ongaku.client import Client
-    from ongaku.internal import types
-    from ongaku.player import Player
 
 __all__ = ("Session",)
 
@@ -96,7 +95,7 @@ class Session:
         self._base_uri = f"http{'s' if ssl else ''}://{host}:{port}"
         self._session_id: str | None = None
         self._session_task: asyncio.Task[None] | None = None
-        self._status = session_.SessionStatus.NOT_CONNECTED
+        self._status = SessionStatus.NOT_CONNECTED
         self._players: typing.MutableMapping[hikari.Snowflake, Player] = {}
         self._websocket_headers: typing.MutableMapping[str, typing.Any] = {}
         self._authorization_headers: typing.Mapping[str, typing.Any] = {
@@ -149,7 +148,7 @@ class Session:
         return self._authorization_headers
 
     @property
-    def status(self) -> session_.SessionStatus:
+    def status(self) -> SessionStatus:
         """The current status of the session."""
         return self._status
 
@@ -268,14 +267,14 @@ class Session:
             return return_type(payload)
 
         try:
-            json_payload = json_loads(payload)
+            json_payload = orjson.loads(payload)
         except Exception as e:
             raise errors.BuildError(e)
 
         return return_type(json_payload)
 
     def _handle_op_code(self, data: str) -> hikari.Event:
-        mapped_data = json_loads(data)
+        mapped_data = orjson.loads(data)
 
         if isinstance(mapped_data, typing.Sequence):
             raise errors.BuildError(
@@ -283,22 +282,22 @@ class Session:
                 "Invalid data received. Must be of type 'typing.Mapping' and not 'typing.Sequence'",
             )
 
-        op_code = session_.WebsocketOPCode(mapped_data["op"])
+        op_code = WebsocketOPCode(mapped_data["op"])
 
-        if op_code == session_.WebsocketOPCode.READY:
-            event: events.events_.OngakuEvent = events.ReadyEvent.from_session(
+        if op_code == WebsocketOPCode.READY:
+            event: events.OngakuEvent = events.ReadyEvent.from_session(
                 self, mapped_data["resumed"], mapped_data["sessionId"]
             )
             self._session_id = event.session_id
 
-        elif op_code == session_.WebsocketOPCode.PLAYER_UPDATE:
+        elif op_code == WebsocketOPCode.PLAYER_UPDATE:
             event = events.PlayerUpdateEvent.from_session(
                 self,
                 hikari.Snowflake(int(mapped_data["guildId"])),
                 State.from_payload(mapped_data["state"]),
             )
 
-        elif op_code == session_.WebsocketOPCode.STATS:
+        elif op_code == WebsocketOPCode.STATS:
             stats = Statistics.from_payload(mapped_data)
             event = events.StatisticsEvent.from_session(
                 self,
@@ -311,34 +310,34 @@ class Session:
             )
 
         else:
-            event_type = session_.WebsocketEvent(mapped_data["type"])
+            event_type = WebsocketEvent(mapped_data["type"])
 
-            if event_type == session_.WebsocketEvent.TRACK_START_EVENT:
+            if event_type == WebsocketEvent.TRACK_START_EVENT:
                 event = events.TrackStartEvent.from_session(
                     self,
                     hikari.Snowflake(int(mapped_data["guildId"])),
                     Track.from_payload(mapped_data["track"]),
                 )
 
-            elif event_type == session_.WebsocketEvent.TRACK_END_EVENT:
+            elif event_type == WebsocketEvent.TRACK_END_EVENT:
                 event = events.TrackEndEvent.from_session(
                     self,
                     hikari.Snowflake(int(mapped_data["guildId"])),
                     Track.from_payload(mapped_data["track"]),
-                    events.events_.TrackEndReasonType(mapped_data["reason"]),
+                    events.TrackEndReasonType(mapped_data["reason"]),
                 )
 
-            elif event_type == session_.WebsocketEvent.TRACK_EXCEPTION_EVENT:
+            elif event_type == WebsocketEvent.TRACK_EXCEPTION_EVENT:
                 event = events.TrackExceptionEvent.from_session(
                     self,
                     hikari.Snowflake(int(mapped_data["guildId"])),
                     Track.from_payload(mapped_data["track"]),
-                    events.TrackException.from_payload(
+                    events.TrackExceptionError.from_payload(
                         mapped_data["exception"]
                     ),
                 )
 
-            elif event_type == session_.WebsocketEvent.TRACK_STUCK_EVENT:
+            elif event_type == WebsocketEvent.TRACK_STUCK_EVENT:
                 event = events.TrackStuckEvent.from_session(
                     self,
                     hikari.Snowflake(int(mapped_data["guildId"])),
@@ -388,13 +387,13 @@ class Session:
 
         if not bot:
             if self._remaining_attempts > 0:
-                self._status = session_.SessionStatus.NOT_CONNECTED
+                self._status = SessionStatus.NOT_CONNECTED
 
                 _logger.warning(
                     "Attempted fetching the bot, but failed as it does not exist.",
                 )
             else:
-                self._status = session_.SessionStatus.FAILURE
+                self._status = SessionStatus.FAILURE
 
             _logger.warning(
                 "Attempted fetching the bot, but failed as it does not exist.",
@@ -428,23 +427,23 @@ class Session:
                         TRACE_LEVEL,
                         f"Successfully made connection to session {self.name}",
                     )
-                    self._status = session_.SessionStatus.CONNECTED
+                    self._status = SessionStatus.CONNECTED
                     while True:
                         msg = await ws.receive()
 
                         if self._handle_ws_message(msg) is False:
-                            self._status = session_.SessionStatus.FAILURE
+                            self._status = SessionStatus.FAILURE
                             await self.transfer(self.client.session_handler)
                             return
 
             except Exception as e:
                 _logger.warning(f"Websocket connection failure: {e}")
-                self._status = session_.SessionStatus.NOT_CONNECTED
+                self._status = SessionStatus.NOT_CONNECTED
                 break
 
         else:
             _logger.warning(f"Session {self.name} has no more attempts.")
-            self._status = session_.SessionStatus.NOT_CONNECTED
+            self._status = SessionStatus.NOT_CONNECTED
 
     def _get_session_id(self) -> str:
         if self.session_id:
@@ -452,7 +451,7 @@ class Session:
 
         raise errors.SessionStartError
 
-    async def transfer(self, session_handler: handler_.SessionHandler) -> None:
+    async def transfer(self, session_handler: BaseSessionHandler) -> None:
         """
         Transfer.
 

@@ -3,17 +3,20 @@
 All of the ongaku errors.
 """
 
+import abc
 import datetime
+import enum
 import typing
 
-from ongaku.abc import errors as errors_
-from ongaku.abc.errors import SeverityType
-from ongaku.abc.payload import PayloadObject
+from typing_extensions import Self
+
+from ongaku.impl.payload import PayloadObject
 
 __all__ = (
     "BuildError",
     "ClientAliveError",
     "ClientError",
+    "ExceptionError",
     "NoSessionsError",
     "OngakuError",
     "PlayerConnectError",
@@ -28,8 +31,61 @@ __all__ = (
     "SessionError",
     "SessionHandlerError",
     "SessionStartError",
+    "SeverityType",
     "TimeoutError",
 )
+
+
+class SeverityType(str, enum.Enum):
+    """
+    Track error severity type.
+
+    The severity type of the lavalink track error.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/websocket#severity)
+    """
+
+    COMMON = "common"
+    """The cause is known and expected, indicates that there is nothing wrong with the library itself."""
+    SUSPICIOUS = "suspicious"
+    """The cause might not be exactly known, but is possibly caused by outside factors. For example when an outside service responds in a format that we do not expect."""
+    FAULT = "fault"
+    """The probable cause is an issue with the library or there is no way to tell what the cause might be. This is the default level and other levels are used in cases where the thrower has more in-depth knowledge about the error."""
+
+
+class ExceptionError(abc.ABC):
+    """
+    Exception error.
+
+    The exception error lavalink returns when a track has an exception.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/websocket.html#exception-object)
+    """
+
+    @property
+    @abc.abstractmethod
+    def message(self) -> str | None:
+        """The message of the exception."""
+
+    @property
+    @abc.abstractmethod
+    def severity(self) -> SeverityType:
+        """The severity of the exception."""
+
+    @property
+    @abc.abstractmethod
+    def cause(self) -> str:
+        """The cause of the exception."""
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ExceptionError):
+            return False
+
+        return (
+            self.message == other.message
+            and self.severity == other.severity
+            and self.cause == other.cause
+        )
 
 
 class OngakuError(Exception):
@@ -151,7 +207,7 @@ class RestEmptyError(RestError):
     """Raised when the request was 204, but data was requested."""
 
 
-class RestExceptionError(RestError, errors_.ExceptionError, PayloadObject):
+class RestExceptionError(RestError, ExceptionError, PayloadObject):
     """Raised when a track search results in a error result."""
 
     __slots__: typing.Sequence[str] = ()
@@ -167,7 +223,7 @@ class RestExceptionError(RestError, errors_.ExceptionError, PayloadObject):
         self._cause = cause
 
     @classmethod
-    def from_error(cls, error: errors_.ExceptionError):
+    def from_error(cls, error: ExceptionError) -> Self:
         return cls(error.message, error.severity, error.cause)
 
     @property
@@ -175,7 +231,7 @@ class RestExceptionError(RestError, errors_.ExceptionError, PayloadObject):
         return self._message
 
     @property
-    def severity(self) -> errors_.SeverityType:
+    def severity(self) -> SeverityType:
         return self._severity
 
     @property
@@ -197,7 +253,7 @@ class RestExceptionError(RestError, errors_.ExceptionError, PayloadObject):
         """
         return RestExceptionError(
             payload.get("message", None),
-            errors_.SeverityType(payload["severity"]),
+            SeverityType(payload["severity"]),
             payload["cause"],
         )
 

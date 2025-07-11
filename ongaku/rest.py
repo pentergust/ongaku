@@ -8,27 +8,22 @@ import typing
 import hikari
 
 from ongaku import errors
-from ongaku.impl.session import Session as SessionImpl
+from ongaku.client import Client
+from ongaku.impl.filters import Filters
+from ongaku.impl.info import Info
+from ongaku.impl.player import Player
+from ongaku.impl.player import Voice
+from ongaku.impl.playlist import Playlist
+from ongaku.impl.routeplanner import RoutePlannerStatus
+from ongaku.impl.session import Session as SessionData
+from ongaku.impl.statistics import Statistics
+from ongaku.impl.track import Track
 from ongaku.internal import routes
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
-
-if typing.TYPE_CHECKING:
-    from ongaku.abc import session as session_
-    from ongaku.abc.filters import Filters
-    from ongaku.abc.info import Info
-    from ongaku.abc.player import Player
-    from ongaku.abc.player import Voice
-    from ongaku.abc.playlist import Playlist
-    from ongaku.abc.routeplanner import RoutePlannerStatus
-    from ongaku.abc.statistics import Statistics
-    from ongaku.abc.track import Track
-    from ongaku.session import Session
+from ongaku.session import Session
 
 _logger = logger.getChild("rest")
-
-if typing.TYPE_CHECKING:
-    from ongaku.client import Client
 
 
 __all__ = ("RESTClient",)
@@ -581,7 +576,6 @@ class RESTClient:
                     user_data.update({"ongaku_requestor": str(track.requestor)})
 
                 track_data.update({"userData": user_data})
-
                 patch_data.update({"track": track_data})
 
         if position != hikari.UNDEFINED:
@@ -881,10 +875,9 @@ class RESTClient:
         *,
         resuming: bool | None = None,
         timeout: int | None = None,
-        session: Session | None = None,
-    ) -> session_.Session:
-        """
-        Update Lavalink session.
+        session: SessionData | None = None,
+    ) -> Session:
+        """Update Lavalink session.
 
         Updates the lavalink session.
 
@@ -955,7 +948,7 @@ class RESTClient:
         if response is None:
             raise ValueError("Response is required for this request.")
 
-        return SessionImpl.from_payload(response)
+        return SessionData.from_payload(response)
 
     async def fetch_info(self, *, session: Session | None = None) -> Info:
         """

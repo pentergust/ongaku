@@ -3,29 +3,80 @@
 The error implemented classes.
 """
 
+import abc
+import enum
 import typing
 
-from ongaku.abc import errors as errors_
-from ongaku.abc import events as events_
-from ongaku.abc import player as player_
-from ongaku.abc import track as track_
-from ongaku.abc.payload import PayloadObject
+import hikari
 
-if typing.TYPE_CHECKING:
-    import hikari
+from ongaku.client import Client
+from ongaku.errors import ExceptionError
+from ongaku.errors import SeverityType
+from ongaku.impl.payload import PayloadObject
+from ongaku.impl.player import State
+from ongaku.impl.statistics import Cpu
+from ongaku.impl.statistics import FrameStatistics
+from ongaku.impl.statistics import Memory
+from ongaku.impl.track import Track
+from ongaku.session import Session
 
-    from ongaku.abc.player import State
-    from ongaku.abc.statistics import Cpu
-    from ongaku.abc.statistics import FrameStatistics
-    from ongaku.abc.statistics import Memory
-    from ongaku.abc.track import Track
-    from ongaku.client import Client
-    from ongaku.session import Session
-
-__all__ = ("PayloadEvent", "ReadyEvent")
+__all__ = ("OngakuEvent", "PayloadEvent", "ReadyEvent", "TrackEndReasonType")
 
 
-class PayloadEvent(events_.OngakuEvent):
+class TrackEndReasonType(str, enum.Enum):
+    """
+    Track end reason type.
+
+    The track end reason type for the track that was just playing.
+
+    ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/websocket#track-end-reason)
+    """
+
+    FINISHED = "finished"
+    """The track finished playing."""
+    LOADFAILED = "loadFailed"
+    """The track failed to load."""
+    STOPPED = "stopped"
+    """The track was stopped."""
+    REPLACED = "replaced"
+    """The track was replaced."""
+    CLEANUP = "cleanup"
+    """The track was cleaned up."""
+
+
+class OngakuEvent(hikari.Event, abc.ABC):
+    """Ongaku Event.
+
+    The base ongaku event, that adds the client and session to all events.
+    """
+
+    __slots__: typing.Sequence[str] = ("_app", "_client", "_session")
+
+    @property
+    def client(self) -> Client:
+        """The ongaku client attached to the event."""
+        return self._client
+
+    @property
+    def session(self) -> Session:
+        """The session attached to the event."""
+        return self._session
+
+    @property
+    def app(self) -> hikari.RESTAware:
+        return self._app
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, OngakuEvent):
+            return False
+
+        if self.client != other.client:
+            return False
+
+        return self.session == other.session
+
+
+class PayloadEvent(OngakuEvent):
     """
     Payload Event.
 
@@ -63,7 +114,7 @@ class PayloadEvent(events_.OngakuEvent):
         return self.payload == other.payload
 
 
-class ReadyEvent(events_.OngakuEvent):
+class ReadyEvent(OngakuEvent):
     """
     Ready Event.
 
@@ -118,7 +169,7 @@ class ReadyEvent(events_.OngakuEvent):
         return self.session_id == other.session_id
 
 
-class PlayerUpdateEvent(events_.OngakuEvent):
+class PlayerUpdateEvent(OngakuEvent):
     """
     Player Update Event.
 
@@ -148,7 +199,7 @@ class PlayerUpdateEvent(events_.OngakuEvent):
         cls,
         session: Session,
         guild_id: hikari.Snowflake,
-        state: player_.State,
+        state: State,
     ) -> "PlayerUpdateEvent":
         """Build the [PlayerUpdateEvent][ongaku.events.PlayerUpdateEvent] with just a session."""
         return cls(session.app, session.client, session, guild_id, state)
@@ -173,7 +224,7 @@ class PlayerUpdateEvent(events_.OngakuEvent):
         return self.state != other.state
 
 
-class StatisticsEvent(events_.OngakuEvent):
+class StatisticsEvent(OngakuEvent):
     """
     Statistics Event.
 
@@ -268,7 +319,7 @@ class StatisticsEvent(events_.OngakuEvent):
         return self._frame_statistics
 
 
-class TrackStartEvent(events_.OngakuEvent):
+class TrackStartEvent(OngakuEvent):
     """
     Track start event.
 
@@ -285,7 +336,7 @@ class TrackStartEvent(events_.OngakuEvent):
         client: Client,
         session: Session,
         guild_id: hikari.Snowflake,
-        track: track_.Track,
+        track: Track,
     ) -> None:
         self._app = app
         self._client = client
@@ -298,7 +349,7 @@ class TrackStartEvent(events_.OngakuEvent):
         cls,
         session: Session,
         guild_id: hikari.Snowflake,
-        track: track_.Track,
+        track: Track,
     ) -> "TrackStartEvent":
         """Build the [TrackStartEvent][ongaku.events.TrackStartEvent] with just a session."""
         return cls(session.app, session.client, session, guild_id, track)
@@ -323,7 +374,7 @@ class TrackStartEvent(events_.OngakuEvent):
         return self.track == other.track
 
 
-class TrackEndEvent(events_.OngakuEvent):
+class TrackEndEvent(OngakuEvent):
     """
     Track end event.
 
@@ -340,8 +391,8 @@ class TrackEndEvent(events_.OngakuEvent):
         client: Client,
         session: Session,
         guild_id: hikari.Snowflake,
-        track: track_.Track,
-        reason: events_.TrackEndReasonType,
+        track: Track,
+        reason: TrackEndReasonType,
     ) -> None:
         self._app = app
         self._client = client
@@ -355,8 +406,8 @@ class TrackEndEvent(events_.OngakuEvent):
         cls,
         session: Session,
         guild_id: hikari.Snowflake,
-        track: track_.Track,
-        reason: events_.TrackEndReasonType,
+        track: Track,
+        reason: TrackEndReasonType,
     ) -> "TrackEndEvent":
         """Build the [TrackEndEvent][ongaku.events.TrackEndEvent] with just a session."""
         return cls(
@@ -374,7 +425,7 @@ class TrackEndEvent(events_.OngakuEvent):
         return self._track
 
     @property
-    def reason(self) -> events_.TrackEndReasonType:
+    def reason(self) -> TrackEndReasonType:
         """The reason for the track ending."""
         return self._reason
 
@@ -391,13 +442,13 @@ class TrackEndEvent(events_.OngakuEvent):
         return self.reason == other.reason
 
 
-class TrackException(errors_.ExceptionError, PayloadObject):
+class TrackExceptionError(ExceptionError, PayloadObject):
     __slots__: typing.Sequence[str] = ()
 
     def __init__(
         self,
         message: str | None,
-        severity: errors_.SeverityType,
+        severity: SeverityType,
         cause: str,
     ):
         self._message = message
@@ -409,7 +460,7 @@ class TrackException(errors_.ExceptionError, PayloadObject):
         return self._message
 
     @property
-    def severity(self) -> errors_.SeverityType:
+    def severity(self) -> SeverityType:
         return self._severity
 
     @property
@@ -419,7 +470,7 @@ class TrackException(errors_.ExceptionError, PayloadObject):
     @classmethod
     def _from_payload(
         cls, payload: typing.Mapping[str, typing.Any]
-    ) -> "TrackException":
+    ) -> "TrackExceptionError":
         """Build Track Exception from payload.
 
         Raises
@@ -429,14 +480,14 @@ class TrackException(errors_.ExceptionError, PayloadObject):
         KeyError
             Raised when a value was not found in the payload.
         """
-        return TrackException(
+        return TrackExceptionError(
             payload.get("message", None),
-            errors_.SeverityType(payload["severity"]),
+            SeverityType(payload["severity"]),
             payload["cause"],
         )
 
 
-class TrackExceptionEvent(events_.OngakuEvent):
+class TrackExceptionEvent(OngakuEvent):
     """
     Track exception event.
 
@@ -453,8 +504,8 @@ class TrackExceptionEvent(events_.OngakuEvent):
         client: Client,
         session: Session,
         guild_id: hikari.Snowflake,
-        track: track_.Track,
-        exception: errors_.ExceptionError,
+        track: Track,
+        exception: ExceptionError,
     ) -> None:
         self._app = app
         self._client = client
@@ -468,8 +519,8 @@ class TrackExceptionEvent(events_.OngakuEvent):
         cls,
         session: Session,
         guild_id: hikari.Snowflake,
-        track: track_.Track,
-        exception: errors_.ExceptionError,
+        track: Track,
+        exception: ExceptionError,
     ) -> "TrackExceptionEvent":
         """Build the [TrackExceptionEvent][ongaku.events.TrackExceptionEvent] with just a session."""
         return cls(
@@ -487,7 +538,7 @@ class TrackExceptionEvent(events_.OngakuEvent):
         return self._track
 
     @property
-    def exception(self) -> errors_.ExceptionError:
+    def exception(self) -> ExceptionError:
         """The occurred exception."""
         return self._exception
 
@@ -504,7 +555,7 @@ class TrackExceptionEvent(events_.OngakuEvent):
         return self.exception == other.exception
 
 
-class TrackStuckEvent(events_.OngakuEvent):
+class TrackStuckEvent(OngakuEvent):
     """
     Track stuck event.
 
@@ -525,7 +576,7 @@ class TrackStuckEvent(events_.OngakuEvent):
         client: Client,
         session: Session,
         guild_id: hikari.Snowflake,
-        track: track_.Track,
+        track: Track,
         threshold_ms: int,
     ) -> None:
         self._app = app
@@ -540,7 +591,7 @@ class TrackStuckEvent(events_.OngakuEvent):
         cls,
         session: Session,
         guild_id: hikari.Snowflake,
-        track: track_.Track,
+        track: Track,
         threshold_ms: int,
     ) -> "TrackStuckEvent":
         """Build the [PayloadEvent][ongaku.events.PayloadEvent] with just a session."""
@@ -576,7 +627,7 @@ class TrackStuckEvent(events_.OngakuEvent):
         return self.threshold_ms == other.threshold_ms
 
 
-class WebsocketClosedEvent(events_.OngakuEvent):
+class WebsocketClosedEvent(OngakuEvent):
     """
     Websocket Closed Event.
 
@@ -666,7 +717,7 @@ class WebsocketClosedEvent(events_.OngakuEvent):
         return self.by_remote == other.by_remote
 
 
-class QueueEmptyEvent(events_.OngakuEvent):
+class QueueEmptyEvent(OngakuEvent):
     """
     Queue empty event.
 
@@ -681,7 +732,7 @@ class QueueEmptyEvent(events_.OngakuEvent):
         client: Client,
         session: Session,
         guild_id: hikari.Snowflake,
-        old_track: track_.Track,
+        old_track: Track,
     ) -> None:
         self._app = app
         self._client = client
@@ -694,7 +745,7 @@ class QueueEmptyEvent(events_.OngakuEvent):
         cls,
         session: Session,
         guild_id: hikari.Snowflake,
-        old_track: track_.Track,
+        old_track: Track,
     ) -> "QueueEmptyEvent":
         """Build the [PayloadEvent][ongaku.events.PayloadEvent] with just a session."""
         return cls(session.app, session.client, session, guild_id, old_track)
@@ -719,7 +770,7 @@ class QueueEmptyEvent(events_.OngakuEvent):
         return self.old_track == other.old_track
 
 
-class QueueNextEvent(events_.OngakuEvent):
+class QueueNextEvent(OngakuEvent):
     """
     Queue next event.
 
@@ -734,8 +785,8 @@ class QueueNextEvent(events_.OngakuEvent):
         client: Client,
         session: Session,
         guild_id: hikari.Snowflake,
-        track: track_.Track,
-        old_track: track_.Track,
+        track: Track,
+        old_track: Track,
     ) -> None:
         self._app = app
         self._client = client
@@ -749,8 +800,8 @@ class QueueNextEvent(events_.OngakuEvent):
         cls,
         session: Session,
         guild_id: hikari.Snowflake,
-        track: track_.Track,
-        old_track: track_.Track,
+        track: Track,
+        old_track: Track,
     ) -> "QueueNextEvent":
         """Build the [PayloadEvent][ongaku.events.PayloadEvent] with just a session."""
         return cls(

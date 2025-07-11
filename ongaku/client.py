@@ -10,7 +10,7 @@ import hikari
 from typing_extensions import Self
 
 from ongaku import errors
-from ongaku.impl.handlers import BasicSessionHandler
+from ongaku.impl.handlers import SessionHandler
 from ongaku.internal.logger import TRACE_LEVEL
 from ongaku.internal.logger import logger
 from ongaku.player import Player
@@ -21,18 +21,14 @@ if typing.TYPE_CHECKING:
     import arc
     import tanjun
 
-    from ongaku.abc.handler import SessionHandler
-
 
 _logger = logger.getChild("client")
-
 
 __all__ = ("Client",)
 
 
 class Client:
-    """
-    Client.
+    """Client.
 
     The client for ongaku.
 
@@ -71,7 +67,7 @@ class Client:
         self,
         app: hikari.GatewayBotAware,
         *,
-        session_handler: type[SessionHandler] = BasicSessionHandler,
+        session_handler: type[SessionHandler] = SessionHandler,
         logs: str | int = "INFO",
         attempts: int = 3,
     ) -> None:
@@ -95,7 +91,7 @@ class Client:
         cls,
         client: arc.GatewayClient,
         *,
-        session_handler: type[SessionHandler] = BasicSessionHandler,
+        session_handler: type[SessionHandler] = SessionHandler,
         logs: str | int = "INFO",
         attempts: int = 3,
     ) -> Self:
@@ -122,25 +118,23 @@ class Client:
         attempts
             The amount of attempts a session will try to connect to the server.
         """
-        cls = cls(
+        instance = cls(
             client.app,
             session_handler=session_handler,
             logs=logs,
             attempts=attempts,
         )
 
-        client.set_type_dependency(Client, cls)
-
-        client.add_injection_hook(cls._arc_player_injector)
-
-        return cls
+        client.set_type_dependency(Client, instance)
+        client.add_injection_hook(instance._arc_player_injector)
+        return instance
 
     @classmethod
     def from_tanjun(
         cls,
         client: tanjun.abc.Client,
         *,
-        session_handler: type[SessionHandler] = BasicSessionHandler,
+        session_handler: type[SessionHandler] = SessionHandler,
         logs: str | int = "INFO",
         attempts: int = 3,
     ) -> Self:
@@ -172,13 +166,12 @@ class Client:
         except KeyError:
             raise Exception("The gateway bot requested was not found.")
 
-        cls = cls(
+        instance = cls(
             app, session_handler=session_handler, logs=logs, attempts=attempts
         )
 
-        client.set_type_dependency(Client, cls)
-
-        return cls
+        client.set_type_dependency(Client, instance)
+        return instance
 
     @property
     def app(self) -> hikari.GatewayBotAware:
