@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 from unittest import mock
 
@@ -6,9 +8,9 @@ from hikari.impl.event_manager import EventManagerImpl
 from hikari.intents import Intents
 from hikari.snowflakes import Snowflake
 
-from ongaku.abc.filters import BandType
 from ongaku.client import Client
 from ongaku.impl import filters as filters_
+from ongaku.impl.filters import BandType
 from ongaku.impl.track import Track
 from ongaku.impl.track import TrackInfo
 

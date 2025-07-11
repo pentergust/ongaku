@@ -1,4 +1,5 @@
-# ruff: noqa: D100, D101, D102, D103
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 from unittest import mock
 
@@ -10,9 +11,8 @@ from tanjun.clients import Client as TanjunClient
 
 from ongaku import Player
 from ongaku import errors
-from ongaku.abc.handler import SessionHandler
-from ongaku.builders import EntityBuilder
 from ongaku.client import Client
+from ongaku.handler.base import SessionHandler
 from ongaku.rest import RESTClient
 
 if TYPE_CHECKING:
@@ -52,24 +52,15 @@ class TestClient:
         command_client = TanjunClient.from_gateway_bot(gateway_bot)
 
         client = Client.from_tanjun(command_client)
-
         assert client.app == gateway_bot
-
         assert client.is_alive is False
-
         assert isinstance(client.rest, RESTClient)
 
     def test_properties(self, gateway_bot: gateway_bot_.GatewayBot):
         client = Client(gateway_bot)
-
         assert client.app == gateway_bot
-
         assert isinstance(client.rest, RESTClient)
-
         assert client.is_alive is False
-
-        assert isinstance(client.entity_builder, EntityBuilder)
-
         assert isinstance(client.session_handler, SessionHandler)
 
     @pytest.mark.asyncio

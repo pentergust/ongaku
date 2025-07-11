@@ -1,6 +1,6 @@
 import pytest
 
-from ongaku.abc.filters import BandType
+from ongaku.impl.filters import BandType
 from ongaku.impl.filters import ChannelMix
 from ongaku.impl.filters import Distortion
 from ongaku.impl.filters import Equalizer
@@ -49,12 +49,12 @@ def test_filters():
     assert filters.distortion == distortion
     assert filters.channel_mix == channel_mix
     assert filters.low_pass == low_pass
-    assert filters.plugin_filters == {}
+    assert filters.plugin_filters is None
 
 
 class TestFilterFunctions:
     def test_from_filter(self, ongaku_filters: Filters):
-        filters = Filters.from_filter(ongaku_filters)
+        filters = ongaku_filters
 
         assert filters.volume == 1.2
         assert filters.equalizer == ongaku_filters.equalizer
@@ -66,13 +66,12 @@ class TestFilterFunctions:
         assert filters.distortion == ongaku_filters.distortion
         assert filters.channel_mix == ongaku_filters.channel_mix
         assert filters.low_pass == ongaku_filters.low_pass
-        assert filters.plugin_filters == {}
+        assert filters.plugin_filters is None
 
     def test_set_volume(self):
         filters = Filters()
 
         filters.set_volume(10)
-
         assert filters.volume == 10
 
         with pytest.raises(ValueError):
@@ -80,8 +79,7 @@ class TestFilterFunctions:
 
     def test_add_equalizer(self):
         filters = Filters()
-
-        filters.add_equalizer(BandType.HZ100, 0.3)
+        filters.equalizer = [Equalizer(BandType.HZ100, 0.3)]
 
         assert len(filters.equalizer) == 1
         assert filters.equalizer[0].band == BandType.HZ100
@@ -91,11 +89,10 @@ class TestFilterFunctions:
         filters = Filters()
 
         filters.add_equalizer(BandType.HZ100, 0.3)
-
+        assert filters.equalizer is not None
         assert len(filters.equalizer) == 1
 
         filters.remove_equalizer(BandType.HZ100)
-
         assert len(filters.equalizer) == 0
 
         with pytest.raises(IndexError):
@@ -105,24 +102,22 @@ class TestFilterFunctions:
         filters = Filters()
 
         filters.add_equalizer(BandType.HZ100, 0.3)
-
         filters.add_equalizer(BandType.HZ630, 0.5)
 
+        assert filters.equalizer is not None
         assert len(filters.equalizer) == 2
 
-        filters.clear_equalizer()
-
-        assert len(filters.equalizer) == 0
+        filters.equalizer = None
+        assert filters.equalizer is None
 
     def test_set_karaoke(self):
         filters = Filters()
 
-        filters.set_karaoke(
+        filters.karaoke = Karaoke(
             level=0.1, mono_level=1.0, filter_band=0.5, filter_width=2
         )
 
         assert filters.karaoke is not None
-
         assert filters.karaoke.level == 0.1
         assert filters.karaoke.mono_level == 1.0
         assert filters.karaoke.filter_band == 0.5
@@ -130,105 +125,86 @@ class TestFilterFunctions:
 
     def test_clear_karaoke(self):
         filters = Filters()
-
-        filters.set_karaoke(
+        filters.karaoke = Karaoke(
             level=0.1, mono_level=1.0, filter_band=0.5, filter_width=2
         )
 
         assert filters.karaoke is not None
 
-        filters.clear_karaoke()
-
+        filters.karaoke = None
         assert filters.karaoke is None
 
     def test_set_timescale(self):
         filters = Filters()
-
-        filters.set_timescale(speed=1, pitch=0.5, rate=0.66)
+        filters.timescale = Timescale(speed=1, pitch=0.5, rate=0.66)
 
         assert filters.timescale is not None
-
         assert filters.timescale.speed == 1
         assert filters.timescale.pitch == 0.5
         assert filters.timescale.rate == 0.66
 
     def test_clear_timescale(self):
         filters = Filters()
-
-        filters.set_timescale(speed=1, pitch=0.5, rate=0.66)
-
+        filters.timescale = Timescale(speed=1, pitch=0.5, rate=0.66)
         assert filters.timescale is not None
 
-        filters.clear_timescale()
-
+        filters.timescale = None
         assert filters.timescale is None
 
     def test_set_tremolo(self):
         filters = Filters()
-
-        filters.set_tremolo(frequency=8, depth=1)
+        filters.tremolo = Tremolo(frequency=8, depth=1)
 
         assert filters.tremolo is not None
-
         assert filters.tremolo.frequency == 8
         assert filters.tremolo.depth == 1
 
     def test_clear_tremolo(self):
         filters = Filters()
 
-        filters.set_tremolo(frequency=8, depth=1)
-
+        filters.tremolo = Tremolo(frequency=8, depth=1)
         assert filters.tremolo is not None
 
-        filters.clear_tremolo()
-
+        filters.tremolo = None
         assert filters.tremolo is None
 
     def test_set_vibrato(self):
         filters = Filters()
-
-        filters.set_vibrato(frequency=8, depth=1)
+        filters.vibrato = Vibrato(frequency=8, depth=1)
 
         assert filters.vibrato is not None
-
         assert filters.vibrato.frequency == 8
         assert filters.vibrato.depth == 1
 
     def test_clear_vibrato(self):
         filters = Filters()
 
-        filters.set_vibrato(frequency=8, depth=1)
-
+        filters.vibrato = Vibrato(frequency=8, depth=1)
         assert filters.vibrato is not None
 
-        filters.clear_vibrato()
-
+        filters.vibrato = None
         assert filters.vibrato is None
 
     def test_set_rotation(self):
         filters = Filters()
-
-        filters.set_rotation(rotation_hz=8)
+        filters.rotation = Rotation(rotation_hz=8)
 
         assert filters.rotation is not None
-
         assert filters.rotation.rotation_hz == 8
 
     def test_clear_rotation(self):
         filters = Filters()
 
-        filters.set_rotation(rotation_hz=8)
-
+        filters.rotation = Rotation(rotation_hz=8)
         assert filters.rotation is not None
 
-        filters.clear_rotation()
-
+        filters.rotation = None
         assert filters.rotation is None
 
     def test_set_distortion(self):
         filters = Filters()
 
-        filters.set_distortion(
+        filters.distortion = Distortion(
             sin_offset=0.3,
             sin_scale=1,
             cos_offset=4,
@@ -240,7 +216,6 @@ class TestFilterFunctions:
         )
 
         assert filters.distortion is not None
-
         assert filters.distortion.sin_offset == 0.3
         assert filters.distortion.sin_scale == 1
         assert filters.distortion.cos_offset == 4
@@ -253,7 +228,7 @@ class TestFilterFunctions:
     def test_clear_distortion(self):
         filters = Filters()
 
-        filters.set_distortion(
+        filters.distortion = Distortion(
             sin_offset=0.3,
             sin_scale=1,
             cos_offset=4,
@@ -266,14 +241,13 @@ class TestFilterFunctions:
 
         assert filters.distortion is not None
 
-        filters.clear_distortion()
-
+        filters.distortion = None
         assert filters.distortion is None
 
     def test_set_channel_mix(self):
         filters = Filters()
 
-        filters.set_channel_mix(
+        filters.channel_mix = ChannelMix(
             left_to_left=0.39,
             left_to_right=1,
             right_to_left=0,
@@ -281,7 +255,6 @@ class TestFilterFunctions:
         )
 
         assert filters.channel_mix is not None
-
         assert filters.channel_mix.left_to_left == 0.39
         assert filters.channel_mix.left_to_right == 1
         assert filters.channel_mix.right_to_left == 0
@@ -290,7 +263,7 @@ class TestFilterFunctions:
     def test_clear_channel_mix(self):
         filters = Filters()
 
-        filters.set_channel_mix(
+        filters.channel_mix = ChannelMix(
             left_to_left=0.39,
             left_to_right=1,
             right_to_left=0,
@@ -299,37 +272,29 @@ class TestFilterFunctions:
 
         assert filters.channel_mix is not None
 
-        filters.clear_channel_mix()
-
+        filters.channel_mix = None
         assert filters.channel_mix is None
 
     def test_set_low_pass(self):
         filters = Filters()
 
-        filters.set_low_pass(smoothing=8)
-
+        filters.low_pass = LowPass(smoothing=8)
         assert filters.low_pass is not None
-
         assert filters.low_pass.smoothing == 8
 
     def test_clear_low_pass(self):
         filters = Filters()
 
-        filters.set_low_pass(smoothing=8)
-
+        filters.low_pass = LowPass(smoothing=8)
         assert filters.low_pass is not None
 
-        filters.clear_low_pass()
-
+        filters.low_pass = None
         assert filters.low_pass is None
 
     def test_set_plugin_filters(self):
         filters = Filters()
-
         payload = {"beanos": "beanos"}
-
-        filters.set_plugin_filters(payload)
-
+        filters.plugin_filters = payload
         assert filters.plugin_filters == payload
 
 

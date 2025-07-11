@@ -1,4 +1,5 @@
-# ruff: noqa: D100, D101, D102, D103
+from __future__ import annotations
+
 import datetime
 import typing
 from unittest import mock
@@ -10,7 +11,7 @@ from hikari.snowflakes import Snowflake
 
 from ongaku import errors
 from ongaku import events
-from ongaku.abc.events import TrackEndReasonType
+from ongaku.events import TrackEndReasonType
 from ongaku.impl import player as player_
 from ongaku.impl import playlist
 from ongaku.impl.player import Voice
@@ -23,8 +24,8 @@ if typing.TYPE_CHECKING:
     from hikari import Event
     from hikari.impl import gateway_bot as gateway_bot_
 
-    from ongaku.abc.filters import Filters
     from ongaku.client import Client
+    from ongaku.impl.filters import Filters
 
 
 async def connect_events(
@@ -56,39 +57,24 @@ async def connect_events(
 class TestPlayer:
     @pytest.mark.asyncio
     async def test_properties(
-        self,
-        gateway_bot: gateway_bot_.GatewayBot,
-        ongaku_session: Session,
+        self, gateway_bot: gateway_bot_.GatewayBot, ongaku_session: Session
     ):
         new_player = Player(ongaku_session, 1234567890)
 
         assert new_player.session == ongaku_session
-
         assert new_player.app == gateway_bot
-
         assert new_player.guild_id == Snowflake(1234567890)
-
         assert new_player.channel_id is None
-
         assert new_player.is_alive is False
-
         assert new_player.position == 0
-
         assert new_player.volume == -1
-
         assert new_player.is_paused is True
-
         assert new_player.autoplay is True
-
         assert new_player.connected is False
-
         assert isinstance(new_player.queue, typing.Sequence)
         assert new_player.queue == []
-
         assert new_player.voice is None
-
         assert new_player.state is None
-
         assert new_player.filters is None
 
     @pytest.mark.asyncio
@@ -96,7 +82,6 @@ class TestPlayer:
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
         # Test Working
-
         voice = Voice("token", "raw_endpoint", "session_id")
 
         with (

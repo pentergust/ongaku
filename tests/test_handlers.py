@@ -1,4 +1,5 @@
-# ruff: noqa: D100, D101, D102, D103
+from __future__ import annotations
+
 import typing
 from unittest import mock
 
@@ -6,10 +7,10 @@ import pytest
 from hikari.snowflakes import Snowflake
 
 from ongaku import errors
-from ongaku.abc.session import SessionStatus
-from ongaku.impl.handlers import BasicSessionHandler
+from ongaku.handler.base import SessionHandler
 from ongaku.player import Player
 from ongaku.session import Session
+from ongaku.session import SessionStatus
 
 if typing.TYPE_CHECKING:
     from ongaku.client import Client
@@ -18,7 +19,7 @@ if typing.TYPE_CHECKING:
 class TestBasicSessionHandler:
     @pytest.mark.asyncio
     async def test_properties(self, ongaku_client: Client):
-        handler = BasicSessionHandler(ongaku_client)
+        handler = SessionHandler(ongaku_client)
 
         assert isinstance(handler.players, typing.Sequence)
         assert handler.players == ()
@@ -30,7 +31,7 @@ class TestBasicSessionHandler:
 
     @pytest.mark.asyncio
     async def test_start(self, ongaku_client: Client):
-        handler = BasicSessionHandler(ongaku_client)
+        handler = SessionHandler(ongaku_client)
 
         assert handler.is_alive is False
 
@@ -70,7 +71,7 @@ class TestBasicSessionHandler:
 
     @pytest.mark.asyncio
     async def test_stop(self, ongaku_client: Client):
-        handler = BasicSessionHandler(ongaku_client)
+        handler = SessionHandler(ongaku_client)
 
         assert handler.is_alive is False
 
@@ -122,7 +123,7 @@ class TestBasicSessionHandler:
     async def test_fetch_session(
         self, ongaku_client: Client, ongaku_session: Session
     ):
-        handler = BasicSessionHandler(ongaku_client)
+        handler = SessionHandler(ongaku_client)
 
         with mock.patch.object(handler, "_current_session", ongaku_session):
             # Test with current session
@@ -196,7 +197,7 @@ class TestBasicSessionHandler:
     async def test_delete_session(
         self, ongaku_client: Client, ongaku_session: Session
     ):
-        handler = BasicSessionHandler(ongaku_client)
+        handler = SessionHandler(ongaku_client)
 
         handler._sessions = {"test_session": ongaku_session}
 
@@ -219,7 +220,7 @@ class TestBasicSessionHandler:
 
     @pytest.mark.asyncio
     async def test_add_session(self, ongaku_client: Client):
-        handler = BasicSessionHandler(ongaku_client)
+        handler = SessionHandler(ongaku_client)
 
         assert len(handler.sessions) == 0
 
@@ -240,7 +241,7 @@ class TestBasicSessionHandler:
     async def test_add_player(
         self, ongaku_client: Client, ongaku_player: Player
     ):
-        handler = BasicSessionHandler(ongaku_client)
+        handler = SessionHandler(ongaku_client)
 
         assert len(handler.players) == 0
 
@@ -255,7 +256,7 @@ class TestBasicSessionHandler:
     async def test_fetch_player(
         self, ongaku_client: Client, ongaku_session: Session
     ):
-        handler = BasicSessionHandler(ongaku_client)
+        handler = SessionHandler(ongaku_client)
 
         # Create a player
 
@@ -292,7 +293,7 @@ class TestBasicSessionHandler:
     async def test_delete_player(
         self, ongaku_client: Client, ongaku_session: Session
     ):
-        handler = BasicSessionHandler(ongaku_client)
+        handler = SessionHandler(ongaku_client)
 
         # Create a player
 

@@ -1,12 +1,13 @@
-# ruff: noqa: D100, D101, D102, D103
+from __future__ import annotations
+
 import datetime
 from typing import TYPE_CHECKING
 
 import hikari
 
 from ongaku import events
-from ongaku.abc.errors import SeverityType
-from ongaku.abc.events import TrackEndReasonType
+from ongaku.errors import SeverityType
+from ongaku.events import TrackEndReasonType
 from ongaku.impl import player
 
 if TYPE_CHECKING:
@@ -268,7 +269,7 @@ class TestTrackEndEvent:
 
 class TestTrackException:
     def test_event(self):
-        exception = events.TrackException(
+        exception = events.TrackExceptionError(
             "message", SeverityType.COMMON, "cause"
         )
 
@@ -285,7 +286,7 @@ class TestTrackExceptionEvent:
         ongaku_session: Session,
         ongaku_track: Track,
     ):
-        exception = events.TrackException(
+        exception = events.TrackExceptionError(
             "message", SeverityType.COMMON, "cause"
         )
         event = events.TrackExceptionEvent(
@@ -311,7 +312,7 @@ class TestTrackExceptionEvent:
         ongaku_session: Session,
         ongaku_track: Track,
     ):
-        exception = events.TrackException(
+        exception = events.TrackExceptionError(
             "message", SeverityType.COMMON, "cause"
         )
         event = events.TrackExceptionEvent.from_session(
