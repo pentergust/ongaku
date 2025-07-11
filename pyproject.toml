@@ -7,7 +7,12 @@ authors = [{ name = "mplaty", email = "contact@mplaty.com" }]
 maintainers = [{ name = "mplaty", email = "contact@mplaty.com" }]
 readme = "README.md"
 requires-python = ">=3.10.0,<3.14"
-dependencies = ["hikari >= 2.3.3", "aiohttp >= 3.11.0"]
+dependencies = [
+    "hikari >= 2.3.3",
+    "aiohttp >= 3.11.0",
+    "orjson>=3.10.18",
+    "loguru>=0.7.3",
+]
 keywords = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: AsyncIO",
