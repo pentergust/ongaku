@@ -1,6 +1,3 @@
-# ruff: noqa: D100, D103
-from __future__ import annotations
-
 import os
 
 import nox
@@ -50,14 +47,7 @@ def format_fix(session: nox.Session) -> None:
 def import_fix(session: nox.Session) -> None:
     uv_sync(session, "format")
     session.run(
-        "python",
-        "-m",
-        "ruff",
-        "check",
-        "--select",
-        "I",
-        *SCRIPT_PATHS,
-        "--fix",
+        "python", "-m", "ruff", "check", "--select", "I", *SCRIPT_PATHS, "--fix"
     )
     session.run("python", "-m", "ruff", "format", *SCRIPT_PATHS)
 
@@ -79,20 +69,17 @@ def pyright(session: nox.Session) -> None:
 
 @nox.session()
 def pytest(session: nox.Session) -> None:
-    uv_sync(session, "test")
-    session.install("-U", ".[injection, dev]")
+    uv_sync(session, "test", "injection", "dev")
     session.run("pytest", "tests")
 
 
 @nox.session()
 def docs(session: nox.Session) -> None:
     uv_sync(session, "doc")
-    session.install("-U", ".")
     session.run("python", "-m", "mkdocs", "build", "-q", "-s")
 
 
 @nox.session()
 def servedocs(session: nox.Session) -> None:
     uv_sync(session, "doc")
-    session.install("-U", ".")
     session.run("python", "-m", "mkdocs", "serve")
