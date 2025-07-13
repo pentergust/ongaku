@@ -11,6 +11,7 @@ import typing
 import aiohttp
 import hikari
 import orjson
+from loguru import logger
 
 from ongaku import errors
 from ongaku import events
@@ -21,9 +22,6 @@ from ongaku.impl.session import WebsocketEvent
 from ongaku.impl.session import WebsocketOPCode
 from ongaku.impl.statistics import Statistics
 from ongaku.impl.track import Track
-from ongaku.internal import types
-from ongaku.internal.logger import TRACE_LEVEL
-from ongaku.internal.logger import logger
 
 if typing.TYPE_CHECKING:
     from ongaku.client import Client
@@ -31,8 +29,29 @@ if typing.TYPE_CHECKING:
     from ongaku.player import Player
 
 
-_logger = logger.getChild("session")
+RequestT = typing.TypeVar(
+    "RequestT",
+    str,
+    int,
+    bool,
+    float,
+    dict[str, typing.Any],
+    list[typing.Any],
+    tuple[typing.Any, ...],
+)
+"""Request Type.
 
+The types you can request for.
+"""
+
+
+RequestorT: typing.TypeAlias = (
+    hikari.SnowflakeishOr[hikari.User] | hikari.SnowflakeishOr[hikari.Member]
+)
+"""Requestor Type.
+
+The types to set for a requestor of a track.s
+"""
 
 __all__ = ("Session",)
 
@@ -171,7 +190,7 @@ class Session:
         self,
         method: str,
         path: str,
-        return_type: type[types.RequestT] | None,
+        return_type: type[RequestT] | None,
         *,
         headers: typing.Mapping[str, typing.Any] = {},
         json: typing.Mapping[str, typing.Any]
@@ -179,7 +198,7 @@ class Session:
         params: typing.Mapping[str, typing.Any] = {},
         ignore_default_headers: bool = False,
         version: bool = True,
-    ) -> types.RequestT | None:
+    ) -> RequestT | None:
         """Request.
 
         Make a http(s) request to the current session
@@ -231,13 +250,14 @@ class Session:
             new_headers.update(self.auth_headers)
 
         new_params: typing.MutableMapping[str, typing.Any] = dict(params)
-
-        if _logger.isEnabledFor(TRACE_LEVEL):
-            new_params.update({"trace": "true"})
-
-        _logger.log(
-            TRACE_LEVEL,
-            f"Making request to {self.base_uri}{'/v4' if version else ''}{path} with headers: {new_headers} and json: {json} and params: {new_params}",
+        logger.debug(
+            "Making request to {}{}{} with headers: {} and json: {} and params: {}",
+            self.base_uri,
+            "/v4" if version else "",
+            path,
+            new_headers,
+            json,
+            new_params,
         )
 
         response = await session.request(
@@ -373,11 +393,11 @@ class Session:
             return True
 
         if msg.type == aiohttp.WSMsgType.ERROR:
-            _logger.warning("An error occurred.")
+            logger.warning("An error occurred. {}", msg.data)
 
         elif msg.type == aiohttp.WSMsgType.CLOSED:
-            _logger.warning(
-                f"Told to close. Code: {msg.data.name}. Message: {msg.extra}",
+            logger.warning(
+                "Told to close. Code: {}. Message: {}", msg.data.name, msg.extra
             )
 
         return False
@@ -385,22 +405,20 @@ class Session:
     async def _websocket(self) -> None:
         bot = self.app.get_me()
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Attempting to start websocket connection to session {self.name}",
+        logger.debug(
+            "Attempting to start websocket connection to session {}", self.name
         )
 
         if not bot:
             if self._remaining_attempts > 0:
                 self._status = SessionStatus.NOT_CONNECTED
-
-                _logger.warning(
+                logger.warning(
                     "Attempted fetching the bot, but failed as it does not exist.",
                 )
             else:
                 self._status = SessionStatus.FAILURE
 
-            _logger.warning(
+            logger.warning(
                 "Attempted fetching the bot, but failed as it does not exist.",
             )
 
@@ -428,9 +446,8 @@ class Session:
                     headers=new_headers,
                     autoclose=False,
                 ) as ws:
-                    _logger.log(
-                        TRACE_LEVEL,
-                        f"Successfully made connection to session {self.name}",
+                    logger.debug(
+                        "Successfully made connection to session {}", self.name
                     )
                     self._status = SessionStatus.CONNECTED
                     while True:
@@ -442,12 +459,12 @@ class Session:
                             return
 
             except Exception as e:
-                _logger.warning(f"Websocket connection failure: {e}")
+                logger.warning("Websocket connection failure: {}", e)
                 self._status = SessionStatus.NOT_CONNECTED
                 break
 
         else:
-            _logger.warning(f"Session {self.name} has no more attempts.")
+            logger.warning("Session {} has no more attempts.", self.name)
             self._status = SessionStatus.NOT_CONNECTED
 
     def _get_session_id(self) -> str:
@@ -472,9 +489,10 @@ class Session:
         """
         session = session_handler.fetch_session()
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Attempting transfer players from session {self.name} to {session.name}",
+        logger.debug(
+            "Attempting transfer players from session {} to {}",
+            self.name,
+            session.name,
         )
 
         for player in self._players.values():
@@ -484,9 +502,10 @@ class Session:
 
         await self.stop()
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully transferred and stopped session {self.name} and moved players to session {session.name}",
+        logger.debug(
+            "Successfully transferred and stopped session {} and moved players to session {}",
+            self.name,
+            session.name,
         )
 
     async def start(self) -> None:
@@ -495,15 +514,8 @@ class Session:
 
         Starts up the session, to receive events.
         """
-        _logger.log(
-            TRACE_LEVEL,
-            f"Starting up session {self.name}",
-        )
+        logger.debug("Starting up session {}", self.name)
         self._session_task = asyncio.create_task(self._websocket())
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully started session {self.name}",
-        )
 
     async def stop(self) -> None:
         """
@@ -511,10 +523,7 @@ class Session:
 
         Stops the current session, if it is running.
         """
-        _logger.log(
-            TRACE_LEVEL,
-            f"Shutting down session {self.name}",
-        )
+        logger.debug("Shutting down session {}", self.name)
         if self._session_task:
             self._session_task.cancel()
 
@@ -522,8 +531,3 @@ class Session:
                 await self._session_task
             except asyncio.CancelledError:
                 self._session_task = None
-
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully shut down session {self.name}",
-        )

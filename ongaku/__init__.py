@@ -4,8 +4,6 @@ GitHub: https://github.com/hikari-ongaku/hikari-ongaku
 Docs: https://ongaku.mplaty.com
 """
 
-import logging
-
 from ongaku.__metadata__ import __author__
 from ongaku.__metadata__ import __author_email__
 from ongaku.__metadata__ import __license__
@@ -55,12 +53,8 @@ from ongaku.impl.routeplanner import RoutePlannerType
 from ongaku.impl.session import SessionStatus
 from ongaku.impl.statistics import Statistics
 from ongaku.impl.track import Track
-from ongaku.internal.logger import TRACE_LEVEL
-from ongaku.internal.logger import TRACE_NAME
 from ongaku.player import Player
 from ongaku.session import Session
-
-logging.addLevelName(TRACE_LEVEL, TRACE_NAME)
 
 __all__ = (  # noqa: RUF022
     # metadata
@@ -119,9 +113,6 @@ __all__ = (  # noqa: RUF022
     "SessionStatus",
     "Statistics",
     "Track",
-    # logger
-    "TRACE_LEVEL",
-    "TRACE_NAME",
     # player
     "Player",
     # Session

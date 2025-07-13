@@ -9,13 +9,12 @@ import typing
 
 import aiohttp
 import hikari
+from loguru import logger
 from typing_extensions import Self
 
 from ongaku import errors
 from ongaku.handler.abc import BaseSessionHandler
 from ongaku.handler.base import SessionHandler
-from ongaku.internal.logger import TRACE_LEVEL
-from ongaku.internal.logger import logger
 from ongaku.player import Player
 from ongaku.rest import RESTClient
 from ongaku.session import Session
@@ -24,8 +23,6 @@ if typing.TYPE_CHECKING:
     import arc
     import tanjun
 
-
-_logger = logger.getChild("client")
 
 __all__ = ("Client",)
 
@@ -71,11 +68,8 @@ class Client:
         app: hikari.GatewayBotAware,
         *,
         session_handler: type[BaseSessionHandler] = SessionHandler,
-        logs: str | int = "INFO",
         attempts: int = 3,
     ) -> None:
-        logger.setLevel(logs)
-
         self._attempts = attempts
         self._app = app
         self._client_session: aiohttp.ClientSession | None = None
@@ -120,10 +114,7 @@ class Client:
             The amount of attempts a session will try to connect to the server.
         """
         instance = cls(
-            client.app,
-            session_handler=session_handler,
-            logs=logs,
-            attempts=attempts,
+            client.app, session_handler=session_handler, attempts=attempts
         )
 
         client.set_type_dependency(Client, instance)
@@ -167,10 +158,7 @@ class Client:
         except KeyError:
             raise Exception("The gateway bot requested was not found.")
 
-        instance = cls(
-            app, session_handler=session_handler, logs=logs, attempts=attempts
-        )
-
+        instance = cls(app, session_handler=session_handler, attempts=attempts)
         client.set_type_dependency(Client, instance)
         return instance
 
@@ -216,37 +204,32 @@ class Client:
         return self._client_session
 
     async def _start_event(self, event: hikari.StartedEvent) -> None:
-        _logger.log(TRACE_LEVEL, "Starting up ongaku.")
+        logger.debug("Starting up ongaku.")
         await self.session_handler.start()
-        _logger.log(TRACE_LEVEL, "Successfully started ongaku.")
 
     async def _stop_event(self, event: hikari.StoppingEvent) -> None:
-        _logger.log(TRACE_LEVEL, "Shutting down ongaku.")
+        logger.debug("Shutting down ongaku.")
         await self.session_handler.stop()
 
         if self._client_session:
             await self._client_session.close()
-
-        _logger.log(TRACE_LEVEL, "Successfully shut down ongaku.")
 
     async def _arc_player_injector(
         self,
         ctx: arc.GatewayContext,
         inj_ctx: arc.InjectorOverridingContext,
     ) -> None:
-        _logger.log(TRACE_LEVEL, "Attempting to inject player.")
+        logger.debug("Attempting to inject player.")
 
         if ctx.guild_id is None:
-            _logger.log(TRACE_LEVEL, "Player ignored, not in guild.")
+            logger.debug("Player ignored, not in guild.")
             return
 
         try:
             player = self.fetch_player(ctx.guild_id)
         except errors.PlayerMissingError:
-            _logger.log(TRACE_LEVEL, "Player not found for context.")
+            logger.debug("Player not found for context.")
             return
-
-        _logger.log(TRACE_LEVEL, "Successfully injected player into context.")
 
         inj_ctx.set_type_dependency(Player, player)
 

@@ -24,15 +24,11 @@ if TYPE_CHECKING:
 class TestClient:
     def test_from_arc(self, gateway_bot: gateway_bot_.GatewayBot):
         command_client = ArcGatewayClient(gateway_bot)
-
         client = Client.from_arc(command_client)
 
         assert client.app == gateway_bot
-
         assert client.is_alive is False
-
         assert isinstance(client.rest, RESTClient)
-
         assert command_client.get_type_dependency(Client) == client
 
         # check that from_arc method, adds the player hook.
@@ -43,7 +39,6 @@ class TestClient:
             "arc.client.Client.add_injection_hook",
         ) as patched_injection_hook:
             client = Client.from_arc(command_client)
-
             patched_injection_hook.assert_called_once_with(
                 client._arc_player_injector
             )

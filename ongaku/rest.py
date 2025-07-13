@@ -8,8 +8,10 @@ from __future__ import annotations
 import typing
 
 import hikari
+from loguru import logger
 
 from ongaku import errors
+from ongaku import routes
 from ongaku.impl.info import Info
 from ongaku.impl.player import Player
 from ongaku.impl.playlist import Playlist
@@ -17,18 +19,12 @@ from ongaku.impl.routeplanner import RoutePlannerStatus
 from ongaku.impl.session import Session as SessionData
 from ongaku.impl.statistics import Statistics
 from ongaku.impl.track import Track
-from ongaku.internal import routes
-from ongaku.internal.logger import TRACE_LEVEL
-from ongaku.internal.logger import logger
 from ongaku.session import Session
 
 if typing.TYPE_CHECKING:
     from ongaku.client import Client
     from ongaku.impl.filters import Filters
     from ongaku.impl.player import Voice
-
-
-_logger = logger.getChild("rest")
 
 
 __all__ = ("RESTClient",)
@@ -106,8 +102,7 @@ class RESTClient:
             No result was returned.
         """
         route = routes.GET_LOAD_TRACKS
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -125,17 +120,17 @@ class RESTClient:
         load_type: str = response["loadType"]
 
         if load_type == "empty":
-            _logger.log(TRACE_LEVEL, "loadType is empty.")
+            logger.debug("loadType is empty.")
             return None
 
         if load_type == "error":
-            _logger.log(TRACE_LEVEL, "loadType caused an error.")
+            logger.debug("loadType caused an error.")
             raise errors.RestExceptionError.from_error(
                 errors.RestExceptionError.from_payload(response["data"]),
             )
 
         if load_type == "search":
-            _logger.log(TRACE_LEVEL, "loadType was a search result.")
+            logger.debug("loadType was a search result.")
             tracks: typing.MutableSequence[Track] = []
             for track in response["data"]:
                 try:
@@ -146,14 +141,14 @@ class RESTClient:
             build = tracks
 
         elif load_type == "track":
-            _logger.log(TRACE_LEVEL, "loadType was a track link.")
+            logger.debug("loadType was a track link.")
             try:
                 build = Track.from_payload(response["data"])
             except Exception as e:
                 raise errors.BuildError(e)
 
         elif load_type == "playlist":
-            _logger.log(TRACE_LEVEL, "loadType was a playlist link.")
+            logger.debug("loadType was a playlist link.")
             try:
                 build = Playlist.from_payload(response["data"])
             except Exception as e:
@@ -218,8 +213,7 @@ class RESTClient:
             The Track object.
         """
         route = routes.GET_DECODE_TRACK
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -290,8 +284,7 @@ class RESTClient:
             The Track object.
         """
         route = routes.POST_DECODE_TRACKS
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -369,8 +362,7 @@ class RESTClient:
             The Sequence of player objects.
         """
         route = routes.GET_PLAYERS
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -445,8 +437,7 @@ class RESTClient:
             The player object.
         """
         route = routes.GET_PLAYER
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -791,11 +782,7 @@ class RESTClient:
             )
 
         route = routes.PATCH_PLAYER_UPDATE
-
-        _logger.log(
-            TRACE_LEVEL,
-            str(route),
-        )
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -860,8 +847,7 @@ class RESTClient:
             Raised when an unknown error is caught.
         """
         route = routes.DELETE_PLAYER
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -928,8 +914,7 @@ class RESTClient:
             The Session object.
         """
         route = routes.PATCH_SESSION_UPDATE
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -999,8 +984,7 @@ class RESTClient:
             The Info object.
         """
         route = routes.GET_INFO
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -1058,8 +1042,7 @@ class RESTClient:
             The version, in string format.
         """
         route = routes.GET_VERSION
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -1122,8 +1105,7 @@ class RESTClient:
             The Statistics object.
         """
         route = routes.GET_STATISTICS
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -1190,8 +1172,7 @@ class RESTClient:
             The Route Planner for this server is not active.
         """
         route = routes.GET_ROUTEPLANNER_STATUS
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -1252,8 +1233,7 @@ class RESTClient:
             Raised when an unknown error is caught.
         """
         route = routes.POST_ROUTEPLANNER_FREE_ADDRESS
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()
@@ -1301,8 +1281,7 @@ class RESTClient:
             Raised when an unknown error is caught.
         """
         route = routes.POST_ROUTEPLANNER_FREE_ALL
-
-        _logger.log(TRACE_LEVEL, str(route))
+        logger.debug(route)
 
         if not session:
             session = self._client.session_handler.fetch_session()

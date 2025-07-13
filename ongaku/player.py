@@ -11,6 +11,7 @@ from asyncio import TimeoutError
 from asyncio import gather
 
 import hikari
+from loguru import logger
 from typing_extensions import Self
 
 from ongaku import errors
@@ -19,9 +20,6 @@ from ongaku.events import TrackEndReasonType
 from ongaku.impl.player import Voice
 from ongaku.impl.playlist import Playlist
 from ongaku.impl.track import Track
-from ongaku.internal.logger import TRACE_LEVEL
-from ongaku.internal.logger import logger
-from ongaku.internal.types import RequestorT
 
 if typing.TYPE_CHECKING:
     from ongaku.impl.filters import Filters
@@ -29,9 +27,32 @@ if typing.TYPE_CHECKING:
     from ongaku.session import Session
 
 
-_logger = logger.getChild("player")
-
 __all__ = ("Player",)
+
+
+RequestT = typing.TypeVar(
+    "RequestT",
+    str,
+    int,
+    bool,
+    float,
+    dict[str, typing.Any],
+    list[typing.Any],
+    tuple[typing.Any, ...],
+)
+"""Request Type.
+
+The types you can request for.
+"""
+
+
+RequestorT: typing.TypeAlias = (
+    hikari.SnowflakeishOr[hikari.User] | hikari.SnowflakeishOr[hikari.Member]
+)
+"""Requestor Type.
+
+The types to set for a requestor of a track.s
+"""
 
 
 class Player:
@@ -228,10 +249,10 @@ class Player:
             Raised when a construction of a ABC class fails.
         """
         session = self.session._get_session_id()
-
-        _logger.log(
-            TRACE_LEVEL,
-            f"Attempting connection to voice channel: {hikari.Snowflake(channel)} in guild: {self.guild_id}",
+        logger.debug(
+            "Connection to voice channel: {} in guild: {}",
+            hikari.Snowflake(channel),
+            self.guild_id,
         )
 
         self._channel_id = hikari.Snowflake(channel)
@@ -246,9 +267,10 @@ class Player:
         except Exception as e:
             raise errors.PlayerConnectError(str(e))
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"waiting for voice events for channel: {self.channel_id} in guild: {self.guild_id}",
+        logger.debug(
+            "waiting for voice events for channel: {} in guild: {}",
+            self.channel_id,
+            self.guild_id,
         )
 
         try:
@@ -272,9 +294,10 @@ class Player:
                 f"Endpoint missing for attempted server connection for voice channel {self.channel_id} in {self.guild_id}",
             )
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully received events for channel: {self.channel_id} in guild: {self.guild_id}",
+        logger.debug(
+            "Successfully received events for channel: {} in guild: {}",
+            self.channel_id,
+            self.guild_id,
         )
 
         new_voice = Voice(
@@ -295,9 +318,10 @@ class Player:
 
         self._is_alive = True
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully connected, and sent data to lavalink for channel: {self.channel_id} in guild: {self.guild_id}",
+        logger.debug(
+            "Successfully connected, and sent data to lavalink for channel: {} in guild: {}",
+            self.channel_id,
+            self.guild_id,
         )
 
         self._update(player)
@@ -328,12 +352,12 @@ class Player:
             Raised when a construction of a ABC class fails.
         """
         session = self.session._get_session_id()
-
         await self.clear()
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Attempting to delete player for channel: {self.channel_id} in guild: {self.guild_id}",
+        logger.debug(
+            "Delete player for channel: {} in guild: {}",
+            self.channel_id,
+            self.guild_id,
         )
 
         await self.session.client.rest.delete_player(
@@ -342,24 +366,8 @@ class Player:
             session=self.session,
         )
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully deleted player for channel: {self.channel_id} in guild: {self.guild_id}",
-        )
-
         self._is_alive = False
-
-        _logger.log(
-            TRACE_LEVEL,
-            f"Updating voice state for channel: {self.channel_id} in guild: {self.guild_id}",
-        )
-
         await self.app.update_voice_state(self.guild_id, None)
-
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully updated voice state for channel: {self.channel_id} in guild: {self.guild_id}",
-        )
 
     async def play(
         self,
@@ -474,9 +482,8 @@ class Player:
             self._queue.append(track)
             track_count += 1
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully added {track_count} track(s) to {self.guild_id}",
+        logger.debug(
+            "Successfully added {} track(s) to {}", track_count, self.guild_id
         )
 
     async def pause(self, value: bool | None = None) -> None:
@@ -526,9 +533,10 @@ class Player:
             session=self.session,
         )
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully set paused state to {self.is_paused} in guild {self.guild_id}",
+        logger.debug(
+            "Successfully set paused state to {} in guild {}",
+            self.is_paused,
+            self.guild_id,
         )
 
         self._update(player)
@@ -562,7 +570,6 @@ class Player:
             Raised when a construction of a ABC class fails.
         """
         session = self.session._get_session_id()
-
         player = await self.session.client.rest.update_player(
             session,
             self.guild_id,
@@ -572,10 +579,7 @@ class Player:
         )
 
         self._is_paused = True
-
-        _logger.log(
-            TRACE_LEVEL, f"Successfully stopped track in guild {self.guild_id}"
-        )
+        logger.debug("Successfully stopped track in guild {}", self.guild_id)
 
         self._update(player)
 
@@ -594,23 +598,16 @@ class Player:
         """
         if len(self.queue) <= 2:
             raise errors.PlayerQueueError(
-                "Queue must have more than 2 tracks to shuffle.",
+                "Queue must have more than 2 tracks to shuffle."
             )
 
         new_queue = list(self.queue)
-
         first_track = new_queue.pop(0)
-
         random.shuffle(new_queue)
-
         new_queue.insert(0, first_track)
-
         self._queue = new_queue
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully shuffled queue in guild {self.guild_id}",
-        )
+        logger.debug("Successfully shuffled queue in guild {}", self.guild_id)
 
     async def skip(self, amount: int = 1) -> None:
         """
@@ -660,11 +657,6 @@ class Player:
             self._queue.pop(0)
             removed_tracks += 1
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully removed {removed_tracks} track(s) out of {amount} in guild {self.guild_id}",
-        )
-
         session = self.session._get_session_id()
 
         if len(self.queue) <= 0:
@@ -688,8 +680,11 @@ class Player:
 
             self._update(player)
 
-        _logger.log(
-            TRACE_LEVEL, f"Successfully skipped track in {self.guild_id}"
+        logger.debug(
+            "Successfully skipped {} track(s) out of {} in guild {}",
+            removed_tracks,
+            amount,
+            self.guild_id,
         )
 
     def remove(self, value: Track | int) -> None:
@@ -744,9 +739,7 @@ class Player:
                 f"Failed to remove song in position {value}",
             )
 
-        _logger.log(
-            TRACE_LEVEL, f"Successfully removed track in {self.guild_id}"
-        )
+        logger.debug("Successfully removed track in {}", self.guild_id)
 
     async def clear(self) -> None:
         """
@@ -787,9 +780,7 @@ class Player:
 
         self._update(player)
 
-        _logger.log(
-            TRACE_LEVEL, f"Successfully cleared queue in {self.guild_id}"
-        )
+        logger.debug("Successfully cleared queue in {}", self.guild_id)
 
     def set_autoplay(self, enable: bool | None = None) -> bool:
         """
@@ -872,10 +863,8 @@ class Player:
         )
 
         self._update(player)
-
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully set volume to {volume} in {self.guild_id}",
+        logger.debug(
+            "Successfully set volume to {} in {}", volume, self.guild_id
         )
 
     async def set_position(self, value: int) -> None:
@@ -935,9 +924,10 @@ class Player:
 
         self._update(player)
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully set position ({value}) to track in {self.guild_id}",
+        logger.debug(
+            "Successfully set position ({}) to track in {}",
+            value,
+            self.guild_id,
         )
 
     async def set_filters(self, filters: Filters | None = None) -> None:
@@ -959,11 +949,7 @@ class Player:
             session=self.session,
         )
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully updated filters in guild {self.guild_id}",
-        )
-
+        logger.debug("Successfully updated filters in guild {}", self.guild_id)
         self._update(player)
 
     def set_loop(self, enable: bool | None = None) -> bool:
@@ -1009,13 +995,14 @@ class Player:
         Player
             The new player.
         """
-        _logger.log(
-            TRACE_LEVEL,
-            f"Attempting to transfer player in {self.guild_id} from session ({self.session.name}) to session ({session.name})",
+        logger.debug(
+            "Attempting to transfer player in {} from session ({}) to session ({})",
+            self.guild_id,
+            self.session.name,
+            session.name,
         )
 
         new_player = Player(session, self.guild_id)
-
         new_player.add(self.queue)
 
         if self.connected and self.channel_id:
@@ -1026,17 +1013,13 @@ class Player:
                 await new_player.play()
                 await new_player.set_position(self.position)
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully transferred player in {self.guild_id} from session ({self.session.name}) to session ({session.name})",
-        )
-
         return new_player
 
     def _update(self, player: Self) -> None:
-        _logger.log(
-            TRACE_LEVEL,
-            f"Updating player for channel: {self.channel_id} in guild: {self.guild_id}",
+        logger.debug(
+            "Updating player for channel: {} in guild: {}",
+            self.channel_id,
+            self.guild_id,
         )
 
         self._volume = player.volume
@@ -1061,22 +1044,25 @@ class Player:
         ):
             return
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Auto-playing track for channel: {self.channel_id} in guild: {self.guild_id}",
+        logger.debug(
+            "Auto-playing track for channel: {} in guild: {}",
+            self.channel_id,
+            self.guild_id,
         )
 
         if len(self.queue) == 0:
-            _logger.log(
-                TRACE_LEVEL,
-                f"queue is empty for channel: {self.channel_id} in guild: {self.guild_id}. Skipping.",
+            logger.debug(
+                "queue is empty for channel: {} in guild: {}. Skipping.",
+                self.channel_id,
+                self.guild_id,
             )
             return
 
         if len(self.queue) == 1 and not self.loop:
-            _logger.log(
-                TRACE_LEVEL,
-                f"queue is empty for channel: {self.channel_id} in guild: {self.guild_id}. Dispatching last known track.",
+            logger.debug(
+                "queue is empty for channel: {} in guild: {}. Dispatching last known track.",
+                self.channel_id,
+                self.guild_id,
             )
             new_event = events.QueueEmptyEvent.from_session(
                 self.session,
@@ -1091,15 +1077,18 @@ class Player:
             return
 
         if not self.loop:
-            _logger.log(
-                TRACE_LEVEL,
-                f"Autoplay for channel: {self.channel_id} in guild: {self.guild_id}. Removing old song.",
+            logger.debug(
+                "Autoplay for channel: {} in guild: {}. Removing old song.",
+                self.channel_id,
+                self.guild_id,
             )
             self.remove(0)
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Auto-playing next track for channel: {self.channel_id} in guild: {self.guild_id}. Track title: {self.queue[0].info.title}",
+        logger.debug(
+            "Auto-playing next track for channel: {} in guild: {}. Track title: {}",
+            self.channel_id,
+            self.guild_id,
+            self.queue[0].info.title,
         )
 
         await self.play()
@@ -1114,9 +1103,10 @@ class Player:
             return_tasks=False,
         )
 
-        _logger.log(
-            TRACE_LEVEL,
-            f"Auto-playing successfully completed for channel: {self.channel_id} in guild: {self.guild_id}",
+        logger.debug(
+            "Auto-playing successfully completed for channel: {} in guild: {}",
+            self.channel_id,
+            self.guild_id,
         )
 
     async def _player_update_event(
@@ -1124,19 +1114,10 @@ class Player:
     ) -> None:
         if event.guild_id != self.guild_id:
             return
-
-        _logger.log(
-            TRACE_LEVEL,
-            f"Updating player state in {self.guild_id}",
-        )
+        logger.debug("Updating player state in {}", self.guild_id)
 
         if not event.state.connected and self.connected:
             await self.stop()
-
-        _logger.log(
-            TRACE_LEVEL,
-            f"Successfully updated player state in {self.guild_id}",
-        )
 
         self._state = event.state
         self._connected = event.state.connected
