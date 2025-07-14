@@ -7,6 +7,7 @@ import abc
 import datetime
 import enum
 import typing
+from dataclasses import dataclass
 
 from typing_extensions import Self
 
@@ -37,8 +38,7 @@ __all__ = (
 
 
 class SeverityType(str, enum.Enum):
-    """
-    Track error severity type.
+    """Track error severity type.
 
     The severity type of the lavalink track error.
 
@@ -54,8 +54,7 @@ class SeverityType(str, enum.Enum):
 
 
 class ExceptionError(abc.ABC):
-    """
-    Exception error.
+    """Exception error.
 
     The exception error lavalink returns when a track has an exception.
 
@@ -99,83 +98,38 @@ class RestError(OngakuError):
     """The base rest error for all rest action errors."""
 
 
+@dataclass(slots=True, frozen=True)
 class RestStatusError(RestError):
     """Raised when the status is 4XX or 5XX."""
 
-    __slots__: typing.Sequence[str] = ("_reason", "_status")
+    status: int
+    """The status of the response."""
 
-    def __init__(self, status: int, reason: str | None) -> None:
-        self._status = status
-        self._reason = reason
-
-    @property
-    def status(self) -> int:
-        """The status of the response."""
-        return self._status
-
-    @property
-    def reason(self) -> str | None:
-        """The response of the error."""
-        return self._reason
+    reason: str | None = None
+    """The response of the error."""
 
 
+@dataclass(slots=True, frozen=True)
 class RestRequestError(RestError, PayloadObject):
     """Raised when a rest error is received from the response."""
 
-    __slots__: typing.Sequence[str] = (
-        "_error",
-        "_message",
-        "_path",
-        "_status",
-        "_timestamp",
-        "_trace",
-    )
+    timestamp: datetime.datetime
+    """The timestamp of the error in milliseconds since the Unix epoch."""
 
-    def __init__(
-        self,
-        timestamp: datetime.datetime,
-        status: int,
-        error: str,
-        message: str,
-        path: str,
-        trace: str | None,
-    ) -> None:
-        self._timestamp = timestamp
-        self._status = status
-        self._error = error
-        self._message = message
-        self._path = path
-        self._trace = trace
+    status: int
+    """The HTTP status code."""
 
-    @property
-    def timestamp(self) -> datetime.datetime:
-        """The timestamp of the error in milliseconds since the Unix epoch."""
-        return self._timestamp
+    error: str
+    """The HTTP status code message."""
 
-    @property
-    def status(self) -> int:
-        """The HTTP status code."""
-        return self._status
+    message: str
+    """The error message."""
 
-    @property
-    def error(self) -> str:
-        """The HTTP status code message."""
-        return self._error
+    path: str
+    """The request path."""
 
-    @property
-    def message(self) -> str:
-        """The error message."""
-        return self._message
-
-    @property
-    def path(self) -> str:
-        """The request path."""
-        return self._path
-
-    @property
-    def trace(self) -> str | None:
-        """The stack trace of the error."""
-        return self._trace
+    trace: str | None
+    """The stack trace of the error."""
 
     @classmethod
     def _from_payload(
@@ -207,17 +161,11 @@ class RestEmptyError(RestError):
     """Raised when the request was 204, but data was requested."""
 
 
+# TODO: use dataclasses
 class RestExceptionError(RestError, ExceptionError, PayloadObject):
     """Raised when a track search results in a error result."""
 
-    __slots__: typing.Sequence[str] = ()
-
-    def __init__(
-        self,
-        message: str | None,
-        severity: SeverityType,
-        cause: str,
-    ):
+    def __init__(self, message: str | None, severity: SeverityType, cause: str):
         self._message = message
         self._severity = severity
         self._cause = cause
@@ -265,18 +213,12 @@ class ClientError(OngakuError):
     """The base for all client errors."""
 
 
+@dataclass(slots=True, frozen=True)
 class ClientAliveError(ClientError):
     """Raised when the client is not currently alive, or has crashed."""
 
-    __slots__: typing.Sequence[str] = ("_reason",)
-
-    def __init__(self, reason: str) -> None:
-        self._reason = reason
-
-    @property
-    def reason(self) -> str:
-        """The reason this error occurred."""
-        return self._reason
+    reason: str
+    """The reason this error occurred."""
 
 
 # Sessions
@@ -312,32 +254,20 @@ class PlayerError(OngakuError):
     """The base for all player related errors."""
 
 
+@dataclass(slots=True, frozen=True)
 class PlayerConnectError(PlayerError):
     """Raised when the player cannot connect to lavalink, or discord."""
 
-    __slots__: typing.Sequence[str] = "_reason"
-
-    def __init__(self, reason: str) -> None:
-        self._reason = reason
-
-    @property
-    def reason(self) -> str:
-        """The reason for failure of connection."""
-        return self._reason
+    reason: str
+    """The reason for failure of connection."""
 
 
+@dataclass(slots=True, frozen=True)
 class PlayerQueueError(PlayerError):
     """Raised when the players queue is empty."""
 
-    __slots__: typing.Sequence[str] = "_reason"
-
-    def __init__(self, reason: str) -> None:
-        self._reason = reason
-
-    @property
-    def reason(self) -> str:
-        """Reason for the queue error."""
-        return self._reason
+    reason: str
+    """Reason for the queue error."""
 
 
 class PlayerMissingError(PlayerError):
@@ -347,41 +277,24 @@ class PlayerMissingError(PlayerError):
 # Others:
 
 
+@dataclass(slots=True, frozen=True)
 class BuildError(OngakuError):
     """Raised when a abstract class fails to build."""
 
-    __slots__: typing.Sequence[str] = ("_exception", "_reason")
+    exception: Exception | None
+    """The exception raised to receive the build error."""
 
-    def __init__(
-        self, exception: Exception | None, reason: str | None = None
-    ) -> None:
-        self._exception = exception
-        self._reason = reason
-
-    @property
-    def exception(self) -> Exception | None:
-        """The exception raised to receive the build error."""
-        return self._exception
-
-    @property
-    def reason(self) -> str | None:
-        """The reason this error occurred."""
-        return self._reason
+    reason: str | None = None
+    """The reason this error occurred."""
 
 
 class TimeoutError(OngakuError):
     """Raised when an event times out."""
 
 
+@dataclass(slots=True, frozen=True)
 class UniqueError(OngakuError):
     """Raised when a value should be unique, but is not."""
 
-    __slots__: typing.Sequence[str] = "_reason"
-
-    def __init__(self, reason: str | None) -> None:
-        self._reason = reason
-
-    @property
-    def reason(self) -> str | None:
-        """The reason for the unique error."""
-        return self._reason
+    reason: str | None = None
+    """The reason for the unique error."""

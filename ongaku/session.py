@@ -57,10 +57,7 @@ __all__ = ("Session",)
 
 
 class Session:
-    """
-    Session.
-
-    The base session object.
+    """The base session object.
 
     Parameters
     ----------
@@ -178,14 +175,14 @@ class Session:
 
     @property
     def session_id(self) -> str | None:
-        """
-        The current session id.
+        """The current session id.
 
         !!! note
             Shows up as none if the current session failed to connect, or has not connected yet.
         """
         return self._session_id
 
+    # TODO: Split requestor and validator
     async def request(
         self,
         method: str,
@@ -199,9 +196,7 @@ class Session:
         ignore_default_headers: bool = False,
         version: bool = True,
     ) -> RequestT | None:
-        """Request.
-
-        Make a http(s) request to the current session
+        """Make a http(s) request to the current session.
 
         Parameters
         ----------
@@ -243,7 +238,6 @@ class Session:
             Raised when an unknown error is caught.
         """
         session = self.client._get_client_session()
-
         new_headers: typing.MutableMapping[str, typing.Any] = dict(headers)
 
         if ignore_default_headers is False:
@@ -269,18 +263,19 @@ class Session:
         )
 
         if response.status == 204 and return_type is not None:
-            raise errors.RestEmptyError
+            raise errors.RestEmptyError(f"Excepted {return_type} got None")
 
         if response.status >= 400:
             payload = await response.text()
-
             if len(payload) == 0:
                 raise errors.RestStatusError(response.status, response.reason)
 
             try:
                 rest_error = errors.RestRequestError.from_payload(payload)
-            except Exception:
-                raise errors.RestStatusError(response.status, response.reason)
+            except Exception as e:
+                raise errors.RestStatusError(
+                    response.status, response.reason
+                ) from e
             raise rest_error
 
         if return_type is None:
@@ -294,37 +289,85 @@ class Session:
         try:
             json_payload = orjson.loads(payload)
         except Exception as e:
-            raise errors.BuildError(e)
+            raise errors.BuildError(e, response.reason) from e
 
         return return_type(json_payload)
 
-    def _handle_op_code(self, data: str) -> hikari.Event:
-        mapped_data = orjson.loads(data)
+    # TODO: Refactor this code
+    def _handle_event(
+        self, event: WebsocketEvent, payload: dict[str, typing.Any]
+    ) -> events.OngakuEvent:
+        if event == WebsocketEvent.TRACK_START_EVENT:
+            return events.TrackStartEvent(
+                self.client,
+                self,
+                hikari.Snowflake(payload["guildId"]),
+                Track.from_payload(payload["track"]),
+            )
 
-        if isinstance(mapped_data, typing.Sequence):
+        elif event == WebsocketEvent.TRACK_END_EVENT:
+            return events.TrackEndEvent(
+                self.client,
+                self,
+                hikari.Snowflake(payload["guildId"]),
+                Track.from_payload(payload["track"]),
+                events.TrackEndReasonType(payload["reason"]),
+            )
+
+        elif event == WebsocketEvent.TRACK_EXCEPTION_EVENT:
+            return events.TrackExceptionEvent(
+                self.client,
+                self,
+                hikari.Snowflake(payload["guildId"]),
+                Track.from_payload(payload["track"]),
+                events.TrackExceptionError.from_payload(payload["exception"]),
+            )
+
+        elif event == WebsocketEvent.TRACK_STUCK_EVENT:
+            return events.TrackStuckEvent(
+                self.client,
+                self,
+                hikari.Snowflake(payload["guildId"]),
+                Track.from_payload(payload["track"]),
+                payload["thresholdMs"],
+            )
+        return events.WebsocketClosedEvent(
+            self.client,
+            self,
+            hikari.Snowflake(payload["guildId"]),
+            payload["code"],
+            payload["reason"],
+            payload["byRemote"],
+        )
+
+    def _handle_op_code(self, data: str) -> events.OngakuEvent:
+        payload = orjson.loads(data)
+        if isinstance(payload, typing.Sequence):
             raise errors.BuildError(
                 None,
                 "Invalid data received. Must be of type 'typing.Mapping' and not 'typing.Sequence'",
             )
 
-        op_code = WebsocketOPCode(mapped_data["op"])
-
+        op_code = WebsocketOPCode(payload["op"])
         if op_code == WebsocketOPCode.READY:
-            event: events.OngakuEvent = events.ReadyEvent.from_session(
-                self, mapped_data["resumed"], mapped_data["sessionId"]
+            event = events.ReadyEvent(
+                self.client, self, payload["resumed"], payload["sessionId"]
             )
             self._session_id = event.session_id
+            return event
 
         elif op_code == WebsocketOPCode.PLAYER_UPDATE:
-            event = events.PlayerUpdateEvent.from_session(
+            return events.PlayerUpdateEvent(
+                self.client,
                 self,
-                hikari.Snowflake(int(mapped_data["guildId"])),
-                State.from_payload(mapped_data["state"]),
+                hikari.Snowflake(payload["guildId"]),
+                State.from_payload(payload["state"]),
             )
 
         elif op_code == WebsocketOPCode.STATS:
-            stats = Statistics.from_payload(mapped_data)
-            event = events.StatisticsEvent.from_session(
+            stats = Statistics.from_payload(payload)
+            return events.StatisticsEvent(
+                self.client,
                 self,
                 stats.players,
                 stats.playing_players,
@@ -334,106 +377,47 @@ class Session:
                 stats.frame_stats,
             )
 
-        else:
-            event_type = WebsocketEvent(mapped_data["type"])
-
-            if event_type == WebsocketEvent.TRACK_START_EVENT:
-                event = events.TrackStartEvent.from_session(
-                    self,
-                    hikari.Snowflake(int(mapped_data["guildId"])),
-                    Track.from_payload(mapped_data["track"]),
-                )
-
-            elif event_type == WebsocketEvent.TRACK_END_EVENT:
-                event = events.TrackEndEvent.from_session(
-                    self,
-                    hikari.Snowflake(int(mapped_data["guildId"])),
-                    Track.from_payload(mapped_data["track"]),
-                    events.TrackEndReasonType(mapped_data["reason"]),
-                )
-
-            elif event_type == WebsocketEvent.TRACK_EXCEPTION_EVENT:
-                event = events.TrackExceptionEvent.from_session(
-                    self,
-                    hikari.Snowflake(int(mapped_data["guildId"])),
-                    Track.from_payload(mapped_data["track"]),
-                    events.TrackExceptionError.from_payload(
-                        mapped_data["exception"]
-                    ),
-                )
-
-            elif event_type == WebsocketEvent.TRACK_STUCK_EVENT:
-                event = events.TrackStuckEvent.from_session(
-                    self,
-                    hikari.Snowflake(int(mapped_data["guildId"])),
-                    Track.from_payload(mapped_data["track"]),
-                    mapped_data["thresholdMs"],
-                )
-
-            else:
-                event = events.WebsocketClosedEvent.from_session(
-                    self,
-                    hikari.Snowflake(int(mapped_data["guildId"])),
-                    mapped_data["code"],
-                    mapped_data["reason"],
-                    mapped_data["byRemote"],
-                )
-
-        return event
+        event_type = WebsocketEvent(payload["type"])
+        return self._handle_event(event_type, payload)
 
     def _handle_ws_message(self, msg: aiohttp.WSMessage) -> bool:
         """Returns false if failure or closure, true otherwise."""
         if msg.type == aiohttp.WSMsgType.TEXT:
-            payload_event = events.PayloadEvent.from_session(self, msg.data)
+            payload_event = events.PayloadEvent(self.client, self, msg.data)
             event = self._handle_op_code(msg.data)
-
             self.app.event_manager.dispatch(payload_event, return_tasks=False)
             self.app.event_manager.dispatch(event, return_tasks=False)
-
             return True
 
         if msg.type == aiohttp.WSMsgType.ERROR:
             logger.warning("An error occurred. {}", msg.data)
 
         elif msg.type == aiohttp.WSMsgType.CLOSED:
-            logger.warning(
-                "Told to close. Code: {}. Message: {}", msg.data.name, msg.extra
-            )
+            logger.warning("Told to close. [{}]:{}", msg.data.name, msg.extra)
 
         return False
 
-    async def _websocket(self) -> None:
+    def _get_bot(self) -> hikari.OwnUser:
         bot = self.app.get_me()
-
-        logger.debug(
-            "Attempting to start websocket connection to session {}", self.name
-        )
-
-        if not bot:
+        if bot is None:
+            logger.warning("Fetching the bot failed as it does not exist.")
             if self._remaining_attempts > 0:
                 self._status = SessionStatus.NOT_CONNECTED
-                logger.warning(
-                    "Attempted fetching the bot, but failed as it does not exist.",
-                )
             else:
                 self._status = SessionStatus.FAILURE
-
-            logger.warning(
-                "Attempted fetching the bot, but failed as it does not exist.",
-            )
-
             raise errors.SessionStartError
+        return bot
 
+    async def _websocket(self) -> None:
+        logger.debug("Start websocket connection to session {}", self.name)
+        bot = self._get_bot()
         self._websocket_headers = {
             "User-Id": str(int(bot.id)),
-            "Client-Name": f"{bot.global_name if bot.global_name else 'unknown'}/{__version__}",
+            "Client-Name": f"{bot.global_name or 'unknown'}/{__version__}",
         }
-
-        new_headers: typing.MutableMapping[str, typing.Any] = {}
-
-        new_headers.update(self._websocket_headers)
-
+        new_headers = dict(self._websocket_headers)
         new_headers.update(self.auth_headers)
+
         while self._remaining_attempts >= 1:
             if self._remaining_attempts != self._attempts:
                 await asyncio.sleep(2.5)
@@ -446,38 +430,29 @@ class Session:
                     headers=new_headers,
                     autoclose=False,
                 ) as ws:
-                    logger.debug(
-                        "Successfully made connection to session {}", self.name
-                    )
+                    logger.debug("Connected to session {}", self.name)
                     self._status = SessionStatus.CONNECTED
-                    while True:
-                        msg = await ws.receive()
-
-                        if self._handle_ws_message(msg) is False:
+                    async for msg in ws:
+                        if not self._handle_ws_message(msg):
                             self._status = SessionStatus.FAILURE
                             await self.transfer(self.client.session_handler)
                             return
-
             except Exception as e:
+                logger.exception(e)
                 logger.warning("Websocket connection failure: {}", e)
                 self._status = SessionStatus.NOT_CONNECTED
                 break
 
-        else:
-            logger.warning("Session {} has no more attempts.", self.name)
-            self._status = SessionStatus.NOT_CONNECTED
+        logger.warning("Session {} has no more attempts.", self.name)
+        self._status = SessionStatus.NOT_CONNECTED
 
     def _get_session_id(self) -> str:
         if self.session_id:
             return self.session_id
-
         raise errors.SessionStartError
 
     async def transfer(self, session_handler: BaseSessionHandler) -> None:
-        """
-        Transfer.
-
-        Transfer all the players from this session, to a different one.
+        """Transfer all the players from this session, to a different one.
 
         !!! warning
             This will close the current sessions connection.
@@ -488,29 +463,14 @@ class Session:
             The session handler, that will allow this session to move its players too.
         """
         session = session_handler.fetch_session()
-
-        logger.debug(
-            "Attempting transfer players from session {} to {}",
-            self.name,
-            session.name,
-        )
-
+        logger.debug("Transfer players from {} to {}", self.name, session.name)
         for player in self._players.values():
             player = await player.transfer(session)
-
             session_handler.add_player(player)
-
         await self.stop()
 
-        logger.debug(
-            "Successfully transferred and stopped session {} and moved players to session {}",
-            self.name,
-            session.name,
-        )
-
     async def start(self) -> None:
-        """
-        Start the session.
+        """Start the session.
 
         Starts up the session, to receive events.
         """
@@ -518,16 +478,17 @@ class Session:
         self._session_task = asyncio.create_task(self._websocket())
 
     async def stop(self) -> None:
-        """
-        Stop the session.
+        """Stop the session.
 
         Stops the current session, if it is running.
         """
         logger.debug("Shutting down session {}", self.name)
-        if self._session_task:
-            self._session_task.cancel()
+        if self._session_task is None:
+            return
 
-            try:
-                await self._session_task
-            except asyncio.CancelledError:
-                self._session_task = None
+        self._session_task.cancel()
+
+        try:
+            await self._session_task
+        except asyncio.CancelledError:
+            self._session_task = None

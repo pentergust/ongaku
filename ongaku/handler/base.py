@@ -53,7 +53,6 @@ class SessionHandler(BaseSessionHandler):
 
     async def start(self) -> None:
         self._is_alive = True
-
         for _, session in self._sessions.items():
             if session.status == SessionStatus.NOT_CONNECTED:
                 await session.start()
@@ -67,23 +66,24 @@ class SessionHandler(BaseSessionHandler):
 
     def add_session(self, session: Session) -> Session:
         """Add a session."""
+        exist_session = self._sessions.get(session.name)
+        if exist_session is not None:
+            raise errors.UniqueError(f"The name {session.name} is not unique.")
+
         if self.is_alive:
             asyncio.create_task(session.start())  # noqa: RUF006
 
-        if self._sessions.get(session.name, None) is None:
-            self._sessions.update({session.name: session})
-            return session
-
-        raise errors.UniqueError(f"The name {session.name} is not unique.")
+        self._sessions[session.name] = session
+        return session
 
     def fetch_session(self, name: str | None = None) -> Session:
         if name is not None:
             try:
                 return self._sessions[name]
-            except KeyError:
-                raise errors.SessionMissingError
+            except KeyError as e:
+                raise errors.SessionMissingError from e
 
-        if self._current_session:
+        if self._current_session is not None:
             return self._current_session
 
         for session in self.sessions:
@@ -96,40 +96,34 @@ class SessionHandler(BaseSessionHandler):
     async def delete_session(self, name: str) -> None:
         try:
             session = self._sessions.pop(name)
-        except KeyError:
-            raise errors.SessionMissingError
+        except KeyError as e:
+            raise errors.SessionMissingError from e
 
         await session.stop()
 
-    def add_player(
-        self,
-        player: Player,
-    ) -> Player:
+    def add_player(self, player: Player) -> Player:
         if self._players.get(player.guild_id, None) is not None:
             raise errors.UniqueError(
                 f"A player with the guild id {player.guild_id} has already been made.",
             )
-
-        self._players.update({player.guild_id: player})
-
+        self._players[player.guild_id] = player
         return player
 
     def fetch_player(
         self, guild: hikari.SnowflakeishOr[hikari.Guild]
     ) -> Player:
         player = self._players.get(hikari.Snowflake(guild))
-
-        if player:
+        if player is not None:
             return player
 
-        raise errors.PlayerMissingError
+        raise errors.PlayerMissingError(f"No player found for {guild}")
 
     async def delete_player(
         self, guild: hikari.SnowflakeishOr[hikari.Guild]
     ) -> None:
         try:
             player = self._players.pop(hikari.Snowflake(guild))
-        except KeyError:
-            raise errors.PlayerMissingError
+        except KeyError as e:
+            raise errors.PlayerMissingError from e
 
         await player.disconnect()

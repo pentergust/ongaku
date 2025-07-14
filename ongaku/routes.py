@@ -34,40 +34,44 @@ class Route:
 
 # Info
 
-GET_INFO: Final = Route(GET, "/info")
-GET_VERSION: Final = Route(GET, "/version", include_version=False)
-GET_STATISTICS: Final = Route(GET, "/stats")
+GET_INFO: Final = Route(method=GET, path="/info")
+GET_VERSION: Final = Route(method=GET, path="/version", include_version=False)
+GET_STATISTICS: Final = Route(method=GET, path="/stats")
 
 # Session
 
-PATCH_SESSION_UPDATE: Final = Route(PATCH, "/sessions/{session_id}")
+PATCH_SESSION_UPDATE: Final = Route(method=PATCH, path="/sessions/{session_id}")
 
 # Player
 
-GET_PLAYERS: Final = Route(GET, "/sessions/{session_id}/players")
+GET_PLAYERS: Final = Route(method=GET, path="/sessions/{session_id}/players")
 
-GET_PLAYER: Final = Route(GET, "/sessions/{session_id}/players/{guild_id}")
+GET_PLAYER: Final = Route(
+    method=GET, path="/sessions/{session_id}/players/{guild_id}"
+)
 
 PATCH_PLAYER_UPDATE: Final = Route(
-    PATCH, "/sessions/{session_id}/players/{guild_id}"
+    method=PATCH, path="/sessions/{session_id}/players/{guild_id}"
 )
 
 DELETE_PLAYER: Final = Route(
-    DELETE, "/sessions/{session_id}/players/{guild_id}"
+    method=DELETE, path="/sessions/{session_id}/players/{guild_id}"
 )
 
 # Tracks
 
-GET_LOAD_TRACKS: Final = Route(GET, "/loadtracks")
-GET_DECODE_TRACK: Final = Route(GET, "/decodetrack")
-POST_DECODE_TRACKS: Final = Route(POST, "/decodetracks")
+GET_LOAD_TRACKS: Final = Route(method=GET, path="/loadtracks")
+GET_DECODE_TRACK: Final = Route(method=GET, path="/decodetrack")
+POST_DECODE_TRACKS: Final = Route(method=POST, path="/decodetracks")
 
 # Route Planner
 
-GET_ROUTEPLANNER_STATUS: Final = Route(GET, "/routeplanner/status")
+GET_ROUTEPLANNER_STATUS: Final = Route(method=GET, path="/routeplanner/status")
 
 POST_ROUTEPLANNER_FREE_ADDRESS: Final = Route(
     POST, "/routeplanner/free/address"
 )
 
-POST_ROUTEPLANNER_FREE_ALL: Final = Route(POST, "/routeplanner/free/all")
+POST_ROUTEPLANNER_FREE_ALL: Final = Route(
+    method=POST, path="/routeplanner/free/all"
+)

@@ -31,10 +31,7 @@ __all__ = ("RESTClient",)
 
 
 class RESTClient:
-    """
-    Base REST Client.
-
-    The base REST client, for all rest related actions.
+    """The base REST client, for all rest related actions.
 
     !!! warning
         Please do not create this on your own. Please use the rest attribute, in the base client object you created.
@@ -45,16 +42,10 @@ class RESTClient:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def load_track(  # noqa: C901
-        self,
-        query: str,
-        *,
-        session: Session | None = None,
+    async def load_track(
+        self, query: str, *, session: Session | None = None
     ) -> Playlist | typing.Sequence[Track] | Track | None:
-        """
-        Load tracks.
-
-        Loads tracks from a site, a playlist or a track, to play on a player.
+        """Loads tracks from a site, a playlist or a track, to play on a player.
 
         ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#track-loading)
 
@@ -102,76 +93,46 @@ class RESTClient:
             No result was returned.
         """
         route = routes.GET_LOAD_TRACKS
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         response = await session.request(
-            route.method,
-            route.path,
-            dict,
-            params={"identifier": query},
+            route.method, route.path, dict, params={"identifier": query}
         )
 
         if response is None:
             raise ValueError("Response is required for this request.")
 
         load_type: str = response["loadType"]
-
         if load_type == "empty":
             logger.debug("loadType is empty.")
             return None
 
         if load_type == "error":
             logger.debug("loadType caused an error.")
-            raise errors.RestExceptionError.from_error(
-                errors.RestExceptionError.from_payload(response["data"]),
-            )
+            raise errors.RestExceptionError.from_payload(response["data"])
 
         if load_type == "search":
             logger.debug("loadType was a search result.")
-            tracks: typing.MutableSequence[Track] = []
-            for track in response["data"]:
-                try:
-                    tracks.append(Track.from_payload(track))
-                except Exception as e:
-                    raise errors.BuildError(e)
-
-            build = tracks
+            build = [Track.from_payload(track) for track in response["data"]]
 
         elif load_type == "track":
             logger.debug("loadType was a track link.")
-            try:
-                build = Track.from_payload(response["data"])
-            except Exception as e:
-                raise errors.BuildError(e)
+            build = Track.from_payload(response["data"])
 
         elif load_type == "playlist":
             logger.debug("loadType was a playlist link.")
-            try:
-                build = Playlist.from_payload(response["data"])
-            except Exception as e:
-                raise errors.BuildError(e)
+            build = Playlist.from_payload(response["data"])
 
         else:
             raise errors.BuildError(
-                None,
-                f"An unknown loadType was received: {load_type}",
+                None, f"An unknown loadType was received: {load_type}"
             )
 
         return build
 
     async def decode_track(
-        self,
-        track: str,
-        *,
-        session: Session | None = None,
+        self, track: str, *, session: Session | None = None
     ) -> Track:
-        """
-        Decode a track.
-
-        Decode a track from its encoded state.
+        """Decode a track from its encoded state.
 
         ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#track-decoding)
 
@@ -213,11 +174,7 @@ class RESTClient:
             The Track object.
         """
         route = routes.GET_DECODE_TRACK
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         response = await session.request(
             route.method,
             route.path,
@@ -227,22 +184,12 @@ class RESTClient:
 
         if response is None:
             raise ValueError("Response is required for this request.")
-
-        try:
-            return Track.from_payload(response)
-        except Exception as e:
-            raise errors.BuildError(e)
+        return Track.from_payload(response)
 
     async def decode_tracks(
-        self,
-        tracks: typing.Sequence[str],
-        *,
-        session: Session | None = None,
+        self, tracks: typing.Sequence[str], *, session: Session | None = None
     ) -> typing.Sequence[Track]:
-        """
-        Decode tracks.
-
-        Decode multiple tracks from their encoded state.
+        """Decode multiple tracks from their encoded state.
 
         ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#track-decoding)
 
@@ -284,11 +231,7 @@ class RESTClient:
             The Track object.
         """
         route = routes.POST_DECODE_TRACKS
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         response = await session.request(
             route.method,
             route.path,
@@ -299,27 +242,12 @@ class RESTClient:
 
         if response is None:
             raise ValueError("Response is required for this request.")
-
-        new_tracks: list[Track] = []
-
-        for track in response:
-            try:
-                new_tracks.append(Track.from_payload(track))
-            except Exception as e:
-                raise errors.BuildError(e)
-
-        return new_tracks
+        return [Track.from_payload(payload) for payload in response]
 
     async def fetch_players(
-        self,
-        session_id: str,
-        *,
-        session: Session | None = None,
+        self, session_id: str, *, session: Session | None = None
     ) -> typing.Sequence[Player]:
-        """
-        Fetch all players.
-
-        Fetches all players on this session.
+        """Fetches all players on this session.
 
         ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#get-players)
 
@@ -362,11 +290,7 @@ class RESTClient:
             The Sequence of player objects.
         """
         route = routes.GET_PLAYERS
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         response = await session.request(
             route.method,
             route.path.format(session_id=session_id),
@@ -375,13 +299,7 @@ class RESTClient:
 
         if response is None:
             raise ValueError("Response is required for this request.")
-
-        players: list[Player] = []
-
-        for player in response:
-            players.append(Player.from_payload(player))
-
-        return players
+        return [Player.from_payload(payload) for payload in response]
 
     async def fetch_player(
         self,
@@ -390,10 +308,7 @@ class RESTClient:
         *,
         session: Session | None = None,
     ) -> Player:
-        """
-        Fetch a player.
-
-        Fetches a specific player from this session.
+        """Fetches a specific player from this session.
 
         ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#get-player)
 
@@ -437,11 +352,7 @@ class RESTClient:
             The player object.
         """
         route = routes.GET_PLAYER
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         response = await session.request(
             route.method,
             route.path.format(
@@ -470,10 +381,7 @@ class RESTClient:
         no_replace: bool = True,
         session: Session | None = None,
     ) -> Player:
-        """
-        Fetch a player.
-
-        Fetches a specific player from this session.
+        """Fetches a specific player from this session.
 
         ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#update-player)
 
@@ -551,242 +459,42 @@ class RESTClient:
             raise ValueError("Update requires at least one change.")
 
         patch_data: typing.MutableMapping[str, typing.Any] = {}
-
         if track != hikari.UNDEFINED:
             if track is None:
-                patch_data.update(
-                    {
-                        "track": {
-                            "encoded": None,
-                        },
-                    },
-                )
+                patch_data["track"] = {"encoded": None}
             else:
-                track_data: typing.MutableMapping[str, typing.Any] = {
-                    "encoded": track.encoded,
-                }
-
+                track_data: dict[str, typing.Any] = {"encoded": track.encoded}
                 user_data = dict(track.user_data)
+                if track.requestor is not None:
+                    user_data["ongaku_requestor"] = str(track.requestor)
 
-                if track.requestor:
-                    user_data.update({"ongaku_requestor": str(track.requestor)})
-
-                track_data.update({"userData": user_data})
-                patch_data.update({"track": track_data})
+                track_data["userData"] = user_data
+                patch_data["track"] = track_data
 
         if position != hikari.UNDEFINED:
-            patch_data.update({"position": position})
+            patch_data["position"] = position
 
         if end_time != hikari.UNDEFINED:
-            patch_data.update({"endTime": end_time})
+            patch_data["endTime"] = end_time
 
         if volume != hikari.UNDEFINED:
-            patch_data.update({"volume": volume})
+            patch_data["volume"] = volume
 
         if paused != hikari.UNDEFINED:
-            patch_data.update({"paused": paused})
+            patch_data["paused"] = paused
 
         if filters != hikari.UNDEFINED:
-            if filters is None:
-                patch_data.update({"filters": None})
-            else:
-                filters_payload: typing.MutableMapping[str, typing.Any] = {}
-
-                print(filters.plugin_filters)
-                if filters.plugin_filters is not None:
-                    filters_payload.update(
-                        {"pluginFilters": filters.plugin_filters}
-                    )
-
-                if filters.volume is not None:
-                    filters_payload.update({"volume": filters.volume})
-
-                if filters.equalizer and len(filters.equalizer) > 0:
-                    equalizer_list: typing.MutableSequence[typing.Any] = []
-                    for eq in filters.equalizer:
-                        equalizer_list.append(
-                            {"band": eq.band.value, "gain": eq.gain}
-                        )
-
-                    filters_payload.update({"equalizer": equalizer_list})
-
-                if filters.karaoke:
-                    karaoke_payload: typing.MutableMapping[str, typing.Any] = {}
-                    if filters.karaoke.level:
-                        karaoke_payload.update({"level": filters.karaoke.level})
-                    if filters.karaoke.mono_level is not None:
-                        karaoke_payload.update(
-                            {"monoLevel": filters.karaoke.mono_level},
-                        )
-                    if filters.karaoke.filter_band is not None:
-                        karaoke_payload.update(
-                            {"filterBand": filters.karaoke.filter_band},
-                        )
-                    if filters.karaoke.filter_width is not None:
-                        karaoke_payload.update(
-                            {"filterWidth": filters.karaoke.filter_width},
-                        )
-
-                    if len(karaoke_payload.items()) > 0:
-                        filters_payload.update({"karaoke": karaoke_payload})
-
-                if filters.timescale:
-                    timescale_payload: typing.MutableMapping[
-                        str, typing.Any
-                    ] = {}
-                    if filters.timescale.speed is not None:
-                        timescale_payload.update(
-                            {"speed": filters.timescale.speed}
-                        )
-                    if filters.timescale.pitch is not None:
-                        timescale_payload.update(
-                            {"pitch": filters.timescale.pitch}
-                        )
-                    if filters.timescale.rate is not None:
-                        timescale_payload.update(
-                            {"rate": filters.timescale.rate}
-                        )
-
-                    if len(timescale_payload.items()) > 0:
-                        filters_payload.update({"timescale": timescale_payload})
-
-                if filters.tremolo:
-                    tremolo_payload: typing.MutableMapping[str, typing.Any] = {}
-                    if filters.tremolo.frequency is not None:
-                        tremolo_payload.update(
-                            {"frequency": filters.tremolo.frequency}
-                        )
-                    if filters.tremolo.depth is not None:
-                        tremolo_payload.update({"depth": filters.tremolo.depth})
-
-                    if len(tremolo_payload.items()) > 0:
-                        filters_payload.update({"tremolo": tremolo_payload})
-
-                if filters.vibrato:
-                    vibrato_payload: typing.MutableMapping[str, typing.Any] = {}
-                    if filters.vibrato.frequency is not None:
-                        vibrato_payload.update(
-                            {"frequency": filters.vibrato.frequency}
-                        )
-                    if filters.vibrato.depth is not None:
-                        vibrato_payload.update({"depth": filters.vibrato.depth})
-
-                    if len(vibrato_payload.items()) > 0:
-                        filters_payload.update({"vibrato": vibrato_payload})
-
-                if filters.rotation:
-                    rotation_payload: typing.MutableMapping[
-                        str, typing.Any
-                    ] = {}
-                    if filters.rotation.rotation_hz is not None:
-                        rotation_payload.update(
-                            {"rotationHz": filters.rotation.rotation_hz},
-                        )
-
-                    if len(rotation_payload.items()) > 0:
-                        filters_payload.update({"rotation": rotation_payload})
-
-                if filters.distortion:
-                    distortion_payload: typing.MutableMapping[
-                        str, typing.Any
-                    ] = {}
-                    if filters.distortion.sin_offset is not None:
-                        distortion_payload.update(
-                            {"sinOffset": filters.distortion.sin_offset},
-                        )
-                    if filters.distortion.sin_scale is not None:
-                        distortion_payload.update(
-                            {"sinScale": filters.distortion.sin_scale},
-                        )
-                    if filters.distortion.cos_offset is not None:
-                        distortion_payload.update(
-                            {"cosOffset": filters.distortion.cos_offset},
-                        )
-                    if filters.distortion.cos_scale is not None:
-                        distortion_payload.update(
-                            {"cosScale": filters.distortion.cos_scale},
-                        )
-                    if filters.distortion.tan_offset is not None:
-                        distortion_payload.update(
-                            {"tanOffset": filters.distortion.tan_offset},
-                        )
-                    if filters.distortion.tan_scale is not None:
-                        distortion_payload.update(
-                            {"tanScale": filters.distortion.tan_scale},
-                        )
-                    if filters.distortion.offset is not None:
-                        distortion_payload.update(
-                            {"offset": filters.distortion.offset}
-                        )
-                    if filters.distortion.scale is not None:
-                        distortion_payload.update(
-                            {"scale": filters.distortion.scale}
-                        )
-
-                    if len(distortion_payload.items()) > 0:
-                        filters_payload.update(
-                            {"distortion": distortion_payload}
-                        )
-
-                if filters.channel_mix:
-                    channel_mix_payload: typing.MutableMapping[
-                        str, typing.Any
-                    ] = {}
-                    if filters.channel_mix.left_to_left is not None:
-                        channel_mix_payload.update(
-                            {"leftToLeft": filters.channel_mix.left_to_left},
-                        )
-                    if filters.channel_mix.left_to_right is not None:
-                        channel_mix_payload.update(
-                            {"leftToRight": filters.channel_mix.left_to_right},
-                        )
-                    if filters.channel_mix.right_to_left is not None:
-                        channel_mix_payload.update(
-                            {"rightToLeft": filters.channel_mix.right_to_left},
-                        )
-                    if filters.channel_mix.right_to_right is not None:
-                        channel_mix_payload.update(
-                            {
-                                "rightToRight": filters.channel_mix.right_to_right
-                            },
-                        )
-
-                    if len(channel_mix_payload.items()) > 0:
-                        filters_payload.update(
-                            {"channelMix": channel_mix_payload}
-                        )
-
-                if filters.low_pass:
-                    low_pass_payload: typing.MutableMapping[
-                        str, typing.Any
-                    ] = {}
-                    if filters.low_pass.smoothing is not None:
-                        low_pass_payload.update(
-                            {"smoothing": filters.low_pass.smoothing},
-                        )
-
-                    if len(low_pass_payload.items()) > 0:
-                        filters_payload.update({"lowPass": low_pass_payload})
-
-                patch_data.update({"filters": filters_payload})
+            patch_data["filters"] = None if filters is None else filters.dump()
 
         if voice != hikari.UNDEFINED:
-            patch_data.update(
-                {
-                    "voice": {
-                        "token": voice.token,
-                        "endpoint": voice.endpoint,
-                        "sessionId": voice.session_id,
-                    },
-                },
-            )
+            patch_data["voice"] = {
+                "token": voice.token,
+                "endpoint": voice.endpoint,
+                "sessionId": voice.session_id,
+            }
 
         route = routes.PATCH_PLAYER_UPDATE
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         response = await session.request(
             route.method,
             route.path.format(
@@ -847,11 +555,7 @@ class RESTClient:
             Raised when an unknown error is caught.
         """
         route = routes.DELETE_PLAYER
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         await session.request(
             route.method,
             route.path.format(
@@ -868,9 +572,7 @@ class RESTClient:
         timeout: int | None = None,
         session: Session | None = None,
     ) -> SessionData:
-        """Update Lavalink session.
-
-        Updates the lavalink session.
+        """Updates the lavalink session.
 
         ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#update-session)
 
@@ -914,18 +616,14 @@ class RESTClient:
             The Session object.
         """
         route = routes.PATCH_SESSION_UPDATE
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         data: typing.MutableMapping[str, typing.Any] = {}
 
         if resuming is not None:
-            data.update({"resuming": resuming})
+            data["resuming"] = resuming
 
-        if timeout:
-            data.update({"timeout": timeout})
+        if timeout is not None:
+            data["timeout"] = timeout
 
         response = await session.request(
             route.method,
@@ -941,10 +639,7 @@ class RESTClient:
         return SessionData.from_payload(response)
 
     async def fetch_info(self, *, session: Session | None = None) -> Info:
-        """
-        Get information.
-
-        Gets the current sessions information.
+        """Gets the current sessions information.
 
         ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#get-lavalink-info)
 
@@ -984,27 +679,15 @@ class RESTClient:
             The Info object.
         """
         route = routes.GET_INFO
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
-        response = await session.request(
-            route.method,
-            route.path,
-            dict,
-        )
-
+        session = session or self._client.session_handler.fetch_session()
+        response = await session.request(route.method, route.path, dict)
         if response is None:
             raise ValueError("Response is required for this request.")
 
         return Info.from_payload(response)
 
     async def fetch_version(self, *, session: Session | None = None) -> str:
-        """
-        Get version.
-
-        Gets the current Lavalink version.
+        """Gets the current Lavalink version.
 
         ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#get-lavalink-version)
 
@@ -1042,18 +725,12 @@ class RESTClient:
             The version, in string format.
         """
         route = routes.GET_VERSION
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         response = await session.request(
             route.method, route.path, str, version=False
         )
-
         if response is None:
             raise ValueError("Response is required for this request.")
-
         return response
 
     async def fetch_stats(
@@ -1105,29 +782,16 @@ class RESTClient:
             The Statistics object.
         """
         route = routes.GET_STATISTICS
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
-        response = await session.request(
-            route.method,
-            route.path,
-            dict,
-        )
-
+        session = session or self._client.session_handler.fetch_session()
+        response = await session.request(route.method, route.path, dict)
         if response is None:
             raise ValueError("Response is required for this request.")
-
         return Statistics.from_payload(response)
 
     async def fetch_routeplanner_status(
-        self,
-        *,
-        session: Session | None = None,
+        self, *, session: Session | None = None
     ) -> RoutePlannerStatus | None:
-        """
-        Fetch routeplanner status.
+        """Fetch routeplanner status.
 
         Fetches the routeplanner status of the current session.
 
@@ -1172,18 +836,11 @@ class RESTClient:
             The Route Planner for this server is not active.
         """
         route = routes.GET_ROUTEPLANNER_STATUS
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         try:
-            response = await session.request(
-                route.method,
-                route.path,
-                dict,
-            )
-        except errors.RestEmptyError:
+            response = await session.request(route.method, route.path, dict)
+        except errors.RestEmptyError as e:
+            logger.warning(e)
             response = None
 
         if response is None:
@@ -1192,13 +849,9 @@ class RESTClient:
         return RoutePlannerStatus.from_payload(response)
 
     async def update_routeplanner_address(
-        self,
-        address: str,
-        *,
-        session: Session | None = None,
+        self, address: str, *, session: Session | None = None
     ) -> None:
-        """
-        Free routeplanner address.
+        """Free routeplanner address.
 
         Free's the specified routeplanner address.
 
@@ -1233,22 +886,15 @@ class RESTClient:
             Raised when an unknown error is caught.
         """
         route = routes.POST_ROUTEPLANNER_FREE_ADDRESS
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
+        session = session or self._client.session_handler.fetch_session()
         await session.request(
             route.method, route.path, None, json={"address": address}
         )
 
     async def update_all_routeplanner_addresses(
-        self,
-        *,
-        session: Session | None = None,
+        self, *, session: Session | None = None
     ) -> None:
-        """
-        Free all routeplanner addresses.
+        """Free all routeplanner addresses.
 
         Frees every blocked routeplanner address.
 
@@ -1281,13 +927,5 @@ class RESTClient:
             Raised when an unknown error is caught.
         """
         route = routes.POST_ROUTEPLANNER_FREE_ALL
-        logger.debug(route)
-
-        if not session:
-            session = self._client.session_handler.fetch_session()
-
-        await session.request(
-            route.method,
-            route.path,
-            None,
-        )
+        session = session or self._client.session_handler.fetch_session()
+        await session.request(route.method, route.path, None)

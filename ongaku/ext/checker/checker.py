@@ -44,7 +44,7 @@ async def check(query: str) -> Checked:
 
         for url_query in url_queries:
             url_query_split = url_query.split("=")
-            queries.update({url_query_split[0]: url_query_split[1]})
+            queries[url_query_split[0]] = url_query_split[1]
 
     if url.netloc in [
         "www.youtube.com",

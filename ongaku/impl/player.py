@@ -141,7 +141,7 @@ class Player(PayloadObject):
             Raised when a value was not found in the payload.
         """
         return Player(
-            hikari.Snowflake(int(payload["guildId"])),
+            hikari.Snowflake(payload["guildId"]),
             Track.from_payload(payload["track"])
             if payload.get("track", None)
             else None,

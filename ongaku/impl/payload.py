@@ -3,6 +3,7 @@
 import typing
 from abc import ABC
 from abc import abstractmethod
+from venv import logger
 
 import orjson
 from typing_extensions import Self
@@ -49,4 +50,11 @@ class PayloadObject(ABC):
         KeyError
             Raised when a value was not found in the payload.
         """
-        return cls._from_payload(_ensure_mapping(payload))
+        # FIXME: Change error type to BuildError
+        try:
+            return cls._from_payload(_ensure_mapping(payload))
+        except Exception as e:
+            logger.error(e)
+            raise ValueError(
+                f"Failed to build {cls} from {payload!r}, cause: {e}"
+            ) from e

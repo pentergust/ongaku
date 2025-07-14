@@ -9,10 +9,8 @@ __all__ = ("fetch_youtube", "update_youtube")
 
 
 async def fetch_youtube(session: Session, /) -> str | None:
-    """
-    Get Youtube.
+    """Gets the current Youtube Refresh Token.
 
-    Gets the current Youtube Refresh Token.
     ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://github.com/lavalink-devs/youtube-source?tab=readme-ov-file#get-youtube)
 
     Example
@@ -69,10 +67,8 @@ async def update_youtube(
     po_token: str | None = None,
     visitor_data: str | None = None,
 ) -> None:
-    """
-    Update Youtube.
+    """Update youtube endpoints.
 
-    Update youtube endpoints.
     ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://github.com/lavalink-devs/youtube-source?tab=readme-ov-file#post-youtube)
 
     Example
@@ -124,16 +120,16 @@ async def update_youtube(
 
     json: dict[str, typing.Any] = {}
 
-    if refresh_token:
-        json.update({"refreshToken": refresh_token})
+    if refresh_token is not None:
+        json["refreshToken"] = refresh_token
 
     if skip_initialization is not None:
-        json.update({"skipInitialization": skip_initialization})
+        json["skipInitialization"] = skip_initialization
 
-    if po_token:
-        json.update({"poToken": po_token})
+    if po_token is not None:
+        json["poToken"] = po_token
 
-    if visitor_data:
-        json.update({"visitorData": visitor_data})
+    if visitor_data is not None:
+        json["visitorData"] = visitor_data
 
     await session.request("POST", "/youtube", None, json=json)

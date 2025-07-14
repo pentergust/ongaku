@@ -28,12 +28,7 @@ __all__ = ("Client",)
 
 
 class Client:
-    """Client.
-
-    The client for ongaku.
-
-    !!! note
-        The lowest log level for ongaku is `TRACE_ONGAKU` which will result in all traces being printed to the terminal.
+    """The client for ongaku.
 
     Example
     -------
@@ -48,8 +43,6 @@ class Client:
         The application that the client will attach too.
     session_handler
         The session handler to use for the current client.
-    logs
-        The log level for ongaku.
     attempts
         The amount of attempts a session will try to connect to the server.
     """
@@ -87,7 +80,6 @@ class Client:
         client: arc.GatewayClient,
         *,
         session_handler: type[BaseSessionHandler] = SessionHandler,
-        logs: str | int = "INFO",
         attempts: int = 3,
     ) -> Self:
         """From Arc.
@@ -108,8 +100,6 @@ class Client:
             Your Gateway client for arc.
         session_handler
             The session handler to use for the current client.
-        logs
-            The log level for ongaku.
         attempts
             The amount of attempts a session will try to connect to the server.
         """
@@ -127,7 +117,6 @@ class Client:
         client: tanjun.abc.Client,
         *,
         session_handler: type[BaseSessionHandler] = SessionHandler,
-        logs: str | int = "INFO",
         attempts: int = 3,
     ) -> Self:
         """From Tanjun.
@@ -148,8 +137,6 @@ class Client:
             Your Gateway client from tanjun.
         session_handler
             The session handler to use for the current client.
-        logs
-            The log level for ongaku.
         attempts
             The amount of attempts a session will try to connect to the server.
         """
@@ -183,7 +170,7 @@ class Client:
         return self.session_handler.is_alive
 
     @property
-    def session_handler(self) -> SessionHandler:
+    def session_handler(self) -> BaseSessionHandler:
         """Session handler.
 
         The session handler that is currently controlling the sessions.
@@ -195,10 +182,7 @@ class Client:
         return self._session_handler
 
     def _get_client_session(self) -> aiohttp.ClientSession:
-        if not self._client_session:
-            self._client_session = aiohttp.ClientSession()
-
-        if self._client_session.closed:
+        if self._client_session is None or self._client_session.closed:
             self._client_session = aiohttp.ClientSession()
 
         return self._client_session
@@ -211,13 +195,11 @@ class Client:
         logger.debug("Shutting down ongaku.")
         await self.session_handler.stop()
 
-        if self._client_session:
+        if self._client_session is not None and not self._client_session.closed:
             await self._client_session.close()
 
     async def _arc_player_injector(
-        self,
-        ctx: arc.GatewayContext,
-        inj_ctx: arc.InjectorOverridingContext,
+        self, ctx: arc.GatewayContext, inj_ctx: arc.InjectorOverridingContext
     ) -> None:
         logger.debug("Attempting to inject player.")
 
@@ -241,10 +223,7 @@ class Client:
         port: int = 2333,
         password: str = "youshallnotpass",
     ) -> Session:
-        """
-        Create Session.
-
-        Create a new session for the session handler.
+        """Create a new session for the session handler.
 
         Example
         -------
@@ -269,8 +248,6 @@ class Client:
             The port of the lavalink server.
         password
             The password of the lavalink server.
-        attempts
-            The attempts that the session is allowed to use, before completely shutting down.
 
         Returns
         -------
@@ -281,22 +258,12 @@ class Client:
         ------
         UniqueError
         """
-        new_session = Session(
-            self,
-            name,
-            ssl,
-            host,
-            port,
-            password,
-            self._attempts,
+        return self.session_handler.add_session(
+            Session(self, name, ssl, host, port, password, self._attempts)
         )
 
-        return self.session_handler.add_session(new_session)
-
     def fetch_session(self, name: str) -> Session:
-        """Fetch a session.
-
-        Fetch a session from the session handler.
+        """Fetch a session from the session handler.
 
         Parameters
         ----------
@@ -316,9 +283,7 @@ class Client:
         return self.session_handler.fetch_session(name)
 
     async def delete_session(self, name: str) -> None:
-        """Delete a session.
-
-        Delete a session from the session handler.
+        """Delete a session from the session handler.
 
         Parameters
         ----------
@@ -335,20 +300,16 @@ class Client:
     def create_player(
         self, guild: hikari.SnowflakeishOr[hikari.Guild]
     ) -> Player:
-        """
-        Create a player.
+        """Create a new player to play songs on.
 
-        Create a new player to play songs on.
+        Tries to get an existing player before creating a new one.
 
         Example
         -------
         ```py
         client = ongaku.Client(...)
-
         player = await client.create_player(guild_id)
-
         await player.connect(channel_id)
-
         await player.play(track)
         ```
 
@@ -373,18 +334,13 @@ class Client:
             pass
 
         session = self.session_handler.fetch_session()
-
         new_player = Player(session, hikari.Snowflake(guild))
-
         return self.session_handler.add_player(new_player)
 
     def fetch_player(
         self, guild: hikari.SnowflakeishOr[hikari.Guild]
     ) -> Player:
-        """
-        Fetch a player.
-
-        Fetches an existing player.
+        """Fetches an existing player.
 
         Example
         -------
@@ -410,10 +366,7 @@ class Client:
     async def delete_player(
         self, guild: hikari.SnowflakeishOr[hikari.Guild]
     ) -> None:
-        """
-        Delete a player.
-
-        Delete a pre-existing player.
+        """Delete a pre-existing player.
 
         Example
         -------

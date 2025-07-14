@@ -9,6 +9,11 @@ from ongaku.impl.payload import PayloadObject
 __all__ = ("BandType", "Filters")
 
 
+def _clear_payload(res: dict[str, typing.Any]) -> dict[str, typing.Any] | None:
+    clear_res = {k: v for k, v in res.items() if v is not None}
+    return clear_res if len(clear_res) > 0 else None
+
+
 class BandType(IntEnum):
     """Band Type.
 
@@ -76,6 +81,10 @@ class Equalizer(PayloadObject):
     ) -> "Equalizer":
         return Equalizer(BandType(payload["band"]), payload["gain"])
 
+    def dump(self) -> dict[str, typing.Any] | None:
+        """Dump filter to use in rest."""
+        return {"band": self.band.value, "gain": self.gain}
+
 
 @dataclass(order=True, frozen=True, slots=True)
 class Karaoke(PayloadObject):
@@ -118,6 +127,17 @@ class Karaoke(PayloadObject):
             payload.get("filterWidth", None),
         )
 
+    def dump(self) -> dict[str, typing.Any] | None:
+        """Dump filter to use it in rest."""
+        return _clear_payload(
+            {
+                "level": self.level,
+                "monoLevel": self.mono_level,
+                "filterBand": self.filter_band,
+                "filterWidth": self.filter_width,
+            }
+        )
+
 
 @dataclass(order=True, frozen=True, slots=True)
 class Timescale(PayloadObject):
@@ -155,6 +175,12 @@ class Timescale(PayloadObject):
             payload.get("rate", None),
         )
 
+    def dump(self) -> dict[str, typing.Any] | None:
+        """Dump filter to use it in rest."""
+        return _clear_payload(
+            {"speed": self.speed, "pitch": self.pitch, "rate": self.rate}
+        )
+
 
 @dataclass(order=True, frozen=True, slots=True)
 class Tremolo(PayloadObject):
@@ -186,6 +212,12 @@ class Tremolo(PayloadObject):
         return Tremolo(
             payload.get("frequency", None),
             payload.get("depth", None),
+        )
+
+    def dump(self) -> dict[str, typing.Any] | None:
+        """Dump filter to use it in rest."""
+        return _clear_payload(
+            {"frequency": self.frequency, "depth": self.depth}
         )
 
 
@@ -223,6 +255,12 @@ class Vibrato(PayloadObject):
             payload.get("depth", None),
         )
 
+    def dump(self) -> dict[str, typing.Any] | None:
+        """Dump filter to use it in rest."""
+        return _clear_payload(
+            {"frequency": self.frequency, "depth": self.depth}
+        )
+
 
 @dataclass(order=True, frozen=True, slots=True)
 class Rotation(PayloadObject):
@@ -244,6 +282,10 @@ class Rotation(PayloadObject):
         return Rotation(
             payload.get("rotationHz", None),
         )
+
+    def dump(self) -> dict[str, typing.Any] | None:
+        """Dump filter to use it in rest."""
+        return _clear_payload({"rotationHz": self.rotation_hz})
 
 
 @dataclass(order=True, frozen=True, slots=True)
@@ -278,6 +320,21 @@ class Distortion(PayloadObject):
             payload.get("tanScale", None),
             payload.get("offset", None),
             payload.get("scale", None),
+        )
+
+    def dump(self) -> dict[str, typing.Any] | None:
+        """Dump filter to use it in rest."""
+        return _clear_payload(
+            {
+                "sinOffset": self.sin_offset,
+                "sinScale": self.sin_scale,
+                "cosOffset": self.cos_offset,
+                "cosScale": self.cos_scale,
+                "tanOffset": self.tan_offset,
+                "tanScale": self.tan_scale,
+                "offset": self.offset,
+                "scale": self.scale,
+            }
         )
 
 
@@ -336,6 +393,17 @@ class ChannelMix(PayloadObject):
             payload.get("rightToRight", None),
         )
 
+    def dump(self) -> dict[str, typing.Any] | None:
+        """Dump filter to use it in rest."""
+        return _clear_payload(
+            {
+                "leftToLeft": self.left_to_left,
+                "leftToRight": self.left_to_right,
+                "rightToLeft": self.right_to_left,
+                "rightToRight": self.right_to_right,
+            }
+        )
+
 
 @dataclass(order=True, frozen=True, slots=True)
 class LowPass(PayloadObject):
@@ -361,12 +429,14 @@ class LowPass(PayloadObject):
         """Build low pass filter from payload."""
         return LowPass(payload.get("smoothing", None))
 
+    def dump(self) -> dict[str, typing.Any] | None:
+        """Dump filter to use it in rest."""
+        return _clear_payload({"smoothing": self.smoothing})
+
 
 @dataclass(order=True, slots=True)
 class Filters(PayloadObject):
-    """Filters.
-
-    The base class for filter.
+    """The base class for filter.
 
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest#filters)
 
@@ -469,8 +539,7 @@ class Filters(PayloadObject):
         )
 
     def add_equalizer(self, band: BandType, gain: float) -> Self:
-        """
-        Add a new equalizer band, with appropriate gain.
+        """Add a new equalizer band, with appropriate gain.
 
         Parameters
         ----------
@@ -487,9 +556,7 @@ class Filters(PayloadObject):
         return self
 
     def remove_equalizer(self, band: BandType) -> Self:
-        """Remove Equalizer.
-
-        Remove a equalizer via its band.
+        """Remove a equalizer via its band.
 
         Parameters
         ----------
@@ -505,3 +572,30 @@ class Filters(PayloadObject):
                 return self
 
         raise IndexError("No values found.")
+
+    def dump(self) -> dict[str, typing.Any] | None:
+        """Dump filter to use in rest."""
+        res = {
+            "volume": self.volume,
+            "equalizer": [eq.dump() for eq in self.equalizer or []],
+            "pluginFilter": self.plugin_filters,
+        }
+
+        filters = (
+            ("karaoke", self.karaoke),
+            ("timescale", self.timescale),
+            ("tremolo", self.tremolo),
+            ("vibrate", self.vibrato),
+            ("rotation", self.rotation),
+            ("distortion", self.distortion),
+            ("channelMix", self.channel_mix),
+            ("lowPass", self.low_pass),
+        )
+        for name, attr in filters:
+            if attr is None:
+                continue
+            dump = attr.dump()
+            if dump is not None:
+                res[name] = dump
+
+        return _clear_payload(res)
