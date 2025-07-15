@@ -17,12 +17,6 @@ async def arc_ensure_player(ctx: arc.GatewayContext):
 
     This is an arc hook, that ensures that the player you are injecting, exists.
 
-    !!! warning
-        You need to install the arc to use this hook.
-        ```
-        pip install hikari-arc
-        ```
-
     Example
     -------
     ```py
@@ -37,7 +31,6 @@ async def arc_ensure_player(ctx: arc.GatewayContext):
         await player.pause()
     ```
 
-
     Parameters
     ----------
     ctx
@@ -48,10 +41,7 @@ async def arc_ensure_player(ctx: arc.GatewayContext):
 
     try:
         client = ctx.get_type_dependency(Client)
-    except KeyError:
-        raise errors.PlayerMissingError
+    except KeyError as e:
+        raise errors.PlayerMissingError from e
 
-    try:
-        client.fetch_player(ctx.guild_id)
-    except errors.PlayerMissingError:
-        raise
+    client.fetch_player(ctx.guild_id)
