@@ -25,14 +25,9 @@ if typing.TYPE_CHECKING:
     from hikari.impl import gateway_bot as gateway_bot_
 
     from ongaku.client import Client
-    from ongaku.impl.filters import Filters
 
 
-async def connect_events(
-    event_type: type[Event],
-    /,
-    timeout: float | None,
-):
+async def connect_events(event_type: type[Event], /, timeout: float):
     if event_type == VoiceServerUpdateEvent:
         return VoiceServerUpdateEvent(
             app=mock.Mock(),
@@ -80,15 +75,11 @@ class TestPlayer:
     @pytest.mark.asyncio
     async def test_connect(self, ongaku_session: Session):
         new_player = Player(ongaku_session, Snowflake(1234567890))
-
-        # Test Working
         voice = Voice("token", "raw_endpoint", "session_id")
 
         with (
             mock.patch.object(
-                ongaku_session,
-                "_get_session_id",
-                return_value="session_id",
+                ongaku_session, "_get_session_id", return_value="session_id"
             ),
             mock.patch.object(
                 ongaku_session.client.app,
@@ -130,11 +121,9 @@ class TestPlayer:
             )
 
             assert new_player.voice is not None
-
             assert new_player.voice.endpoint == voice.endpoint
             assert new_player.voice.token == voice.token
             assert new_player.voice.session_id == voice.session_id
-
             assert new_player.is_alive is True
 
         # Events were received, but raw endpoint was empty.
@@ -166,9 +155,7 @@ class TestPlayer:
 
         with (
             mock.patch.object(
-                ongaku_session,
-                "_get_session_id",
-                return_value="session_id",
+                ongaku_session, "_get_session_id", return_value="session_id"
             ),
             mock.patch.object(
                 ongaku_session.client.app,
@@ -221,13 +208,9 @@ class TestPlayer:
     async def test_play(self, ongaku_session: Session, ongaku_track: Track):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
-        # Test working
-
         with (
             mock.patch.object(
-                ongaku_session,
-                "_get_session_id",
-                return_value="session_id",
+                ongaku_session, "_get_session_id", return_value="session_id"
             ),
             mock.patch.object(
                 new_player,
@@ -260,9 +243,7 @@ class TestPlayer:
             )
 
             assert new_player.is_paused is False
-
             assert len(new_player.queue) == 1
-
             assert new_player.queue[0].requestor == Snowflake(123454321)
 
         # No session_id
@@ -940,40 +921,6 @@ class TestPlayer:
             )
 
     @pytest.mark.asyncio
-    async def test_update(
-        self, ongaku_session: Session, ongaku_filters: Filters
-    ):
-        new_player = Player(ongaku_session, Snowflake(1234567890))
-
-        assert new_player.volume == -1
-        assert new_player.is_paused is True
-        assert new_player.state is None
-        assert new_player.voice is None
-        assert new_player.filters is None
-        assert new_player.connected is False
-
-        state = player_.State(datetime.datetime.now(), 1, True, 2)
-        voice = player_.Voice("token", "endpoint", "session_id")
-        replacement_player = player_.Player(
-            Snowflake(1234567890),
-            None,
-            10,
-            False,
-            state,
-            voice,
-            ongaku_filters,
-        )
-
-        new_player._update(replacement_player)
-
-        assert new_player.volume == 10
-        assert new_player.is_paused is False
-        assert new_player.state == state
-        assert new_player.voice == voice
-        assert new_player.filters == ongaku_filters
-        assert new_player.connected is True
-
-    @pytest.mark.asyncio
     async def test_player_update_event(self, ongaku_session: Session):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
@@ -981,10 +928,8 @@ class TestPlayer:
         assert new_player.connected is False
 
         state = player_.State(datetime.datetime.now(), 1, True, 2)
-        event = events.PlayerUpdateEvent.from_session(
-            ongaku_session,
-            Snowflake(1234567890),
-            state,
+        event = events.PlayerUpdateEvent(
+            ongaku_session.client, ongaku_session, Snowflake(1234567890), state
         )
 
         await new_player._player_update_event(event)
@@ -998,7 +943,8 @@ class TestPlayerTrackEndEvent:
     async def test_autoplay(self, ongaku_session: Session):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
-        event = events.TrackEndEvent.from_session(
+        event = events.TrackEndEvent(
+            ongaku_session.client,
             ongaku_session,
             Snowflake(1234567890),
             track=mock.Mock(encoded="encoded"),
@@ -1035,7 +981,8 @@ class TestPlayerTrackEndEvent:
 
         new_player.add([ongaku_track, mock.Mock(encoded="track")])
 
-        event = events.TrackEndEvent.from_session(
+        event = events.TrackEndEvent(
+            ongaku_session.client,
             ongaku_session,
             Snowflake(1234567890),
             track=ongaku_track,
@@ -1077,7 +1024,8 @@ class TestPlayerTrackEndEvent:
 
         new_player.add(ongaku_track)
 
-        event = events.TrackEndEvent.from_session(
+        event = events.TrackEndEvent(
+            ongaku_session.client,
             ongaku_session,
             Snowflake(1234567890),
             track=ongaku_track,
@@ -1112,19 +1060,22 @@ class TestPlayerTrackEndEvent:
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
         invalid_events = [
-            events.TrackEndEvent.from_session(
+            events.TrackEndEvent(
+                ongaku_session.client,
                 ongaku_session,
                 Snowflake(1234567890),
                 track=mock.Mock(encoded="encoded"),
                 reason=TrackEndReasonType.STOPPED,
             ),
-            events.TrackEndEvent.from_session(
+            events.TrackEndEvent(
+                ongaku_session.client,
                 ongaku_session,
                 Snowflake(1234567890),
                 track=mock.Mock(encoded="encoded"),
                 reason=TrackEndReasonType.CLEANUP,
             ),
-            events.TrackEndEvent.from_session(
+            events.TrackEndEvent(
+                ongaku_session.client,
                 ongaku_session,
                 Snowflake(1234567890),
                 track=mock.Mock(encoded="encoded"),
@@ -1153,7 +1104,8 @@ class TestPlayerTrackEndEvent:
     async def test_invalid_guild_id(self, ongaku_session: Session):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
-        event = events.TrackEndEvent.from_session(
+        event = events.TrackEndEvent(
+            ongaku_session.client,
             ongaku_session,
             Snowflake(1),
             track=mock.Mock(encoded="encoded"),
@@ -1180,7 +1132,8 @@ class TestPlayerTrackEndEvent:
     async def test_empty_queue(self, ongaku_session: Session):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
-        event = events.TrackEndEvent.from_session(
+        event = events.TrackEndEvent(
+            ongaku_session.client,
             ongaku_session,
             Snowflake(1234567890),
             track=mock.Mock(encoded="encoded"),
@@ -1211,7 +1164,8 @@ class TestPlayerTrackEndEvent:
     ):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
-        event = events.TrackEndEvent.from_session(
+        event = events.TrackEndEvent(
+            ongaku_session.client,
             ongaku_session,
             Snowflake(1234567890),
             track=mock.Mock(encoded="encoded"),
@@ -1247,7 +1201,8 @@ class TestPlayerTrackEndEvent:
     async def test_finished_multiple(self, ongaku_session: Session):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
-        event = events.TrackEndEvent.from_session(
+        event = events.TrackEndEvent(
+            ongaku_session.client,
             ongaku_session,
             Snowflake(1234567890),
             track=mock.Mock(encoded="encoded"),
@@ -1299,7 +1254,8 @@ class TestPlayerTrackEndEvent:
     ):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
-        event = events.TrackEndEvent.from_session(
+        event = events.TrackEndEvent(
+            ongaku_session.client,
             ongaku_session,
             Snowflake(1234567890),
             track=mock.Mock(encoded="encoded"),
@@ -1335,7 +1291,8 @@ class TestPlayerTrackEndEvent:
     async def test_load_failed_multiple(self, ongaku_session: Session):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
-        event = events.TrackEndEvent.from_session(
+        event = events.TrackEndEvent(
+            ongaku_session.client,
             ongaku_session,
             Snowflake(1234567890),
             track=mock.Mock(encoded="encoded"),

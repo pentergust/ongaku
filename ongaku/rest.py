@@ -103,23 +103,23 @@ class RESTClient:
 
         load_type: str = response["loadType"]
         if load_type == "empty":
-            logger.debug("loadType is empty.")
+            logger.trace("loadType is empty.")
             return None
 
         if load_type == "error":
-            logger.debug("loadType caused an error.")
+            logger.trace("loadType caused an error.")
             raise errors.RestExceptionError.from_payload(response["data"])
 
         if load_type == "search":
-            logger.debug("loadType was a search result.")
+            logger.trace("loadType was a search result.")
             build = [Track.from_payload(track) for track in response["data"]]
 
         elif load_type == "track":
-            logger.debug("loadType was a track link.")
+            logger.trace("loadType was a track link.")
             build = Track.from_payload(response["data"])
 
         elif load_type == "playlist":
-            logger.debug("loadType was a playlist link.")
+            logger.trace("loadType was a playlist link.")
             build = Playlist.from_payload(response["data"])
 
         else:

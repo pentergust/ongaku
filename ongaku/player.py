@@ -221,7 +221,7 @@ class Player:
             Raised when a construction of a ABC class fails.
         """
         self._channel_id = hikari.Snowflake(channel)
-        logger.debug(
+        logger.trace(
             "Connect to channel: {} guild: {}", self._channel_id, self.guild_id
         )
 
@@ -232,7 +232,7 @@ class Player:
         except Exception as e:
             raise errors.PlayerConnectError(str(e)) from e
 
-        logger.debug(
+        logger.trace(
             "waiting for voice events for channel: {} in guild: {}",
             self.channel_id,
             self.guild_id,
@@ -257,7 +257,7 @@ class Player:
                 f"Endpoint missing for attempted server connection for voice channel {self.channel_id} in {self.guild_id}",
             )
 
-        logger.debug(
+        logger.trace(
             "Received events for channel: {} in guild: {}",
             self.channel_id,
             self.guild_id,
@@ -294,7 +294,7 @@ class Player:
         BuildError
             Raised when a construction of a ABC class fails.
         """
-        logger.debug(
+        logger.trace(
             "Delete player for channel: {} in guild: {}",
             self.channel_id,
             self.guild_id,
@@ -399,7 +399,7 @@ class Player:
             self._queue.append(track)
             track_count += 1
 
-        logger.debug("Added {} track(s) to {}", track_count, self.guild_id)
+        logger.trace("Added {} track(s) to {}", track_count, self.guild_id)
 
     async def pause(self, value: bool | None = None) -> None:
         """Allows for the user to pause the currently playing track on this player.
@@ -436,7 +436,7 @@ class Player:
         else:
             self._is_paused = not self.is_paused
 
-        logger.debug(
+        logger.trace(
             "Set paused state to {} in guild {}", self.is_paused, self.guild_id
         )
         await self._update_player(paused=self._is_paused)
@@ -466,7 +466,7 @@ class Player:
         BuildError
             Raised when a construction of a ABC class fails.
         """
-        logger.debug("Stopped track in guild {}", self.guild_id)
+        logger.trace("Stopped track in guild {}", self.guild_id)
         self._is_paused = True
         await self._update_player(track=None, no_replace=False)
 
@@ -489,7 +489,7 @@ class Player:
         first_track = self._queue.pop(0)
         random.shuffle(self._queue)
         self._queue.insert(0, first_track)
-        logger.debug("Shuffled queue in guild {}", self.guild_id)
+        logger.trace("Shuffled queue in guild {}", self.guild_id)
 
     async def skip(self, amount: int = 1) -> None:
         """skip a selected amount of songs in the queue.
@@ -538,7 +538,7 @@ class Player:
             track = self._queue[0]
 
         await self._update_player(track=track, no_replace=False)
-        logger.debug("Skipped {} track(s) in guild {}", amount, self.guild_id)
+        logger.trace("Skipped {} track(s) in guild {}", amount, self.guild_id)
 
     def index(self, track: Track) -> int:
         """Find track in queue and return their index.
@@ -580,7 +580,7 @@ class Player:
         if len(self.queue) == 0:
             raise errors.PlayerQueueError("Queue is empty.")
 
-        logger.debug("Remove track {} in {}", value, self.guild_id)
+        logger.trace("Remove track {} in {}", value, self.guild_id)
         index = self.index(value) if isinstance(value, Track) else value
         try:
             self._queue.pop(index)
@@ -615,7 +615,7 @@ class Player:
         BuildError
             Raised when a construction of a ABC class fails.
         """
-        logger.debug("Cleared queue in {}", self.guild_id)
+        logger.trace("Cleared queue in {}", self.guild_id)
         self._queue.clear()
         await self._update_player(track=None, no_replace=False)
 
@@ -675,7 +675,7 @@ class Player:
         if volume < 0 or volume > 1000:
             raise ValueError(f"Volume must be in range 0-1000. (now {volume})")
 
-        logger.debug("Set volume to {} in {}", volume, self.guild_id)
+        logger.trace("Set volume to {} in {}", volume, self.guild_id)
         await self._update_player(volume=volume, no_replace=False)
 
     async def set_position(self, value: int) -> None:
@@ -720,7 +720,7 @@ class Player:
                 "A value greater than the current tracks length is not allowed.",
             )
 
-        logger.debug("Set position ({}) to track in {}", value, self.guild_id)
+        logger.trace("Set position ({}) to track in {}", value, self.guild_id)
         await self._update_player(position=value, no_replace=False)
 
     async def set_filters(self, filters: Filters | None = None) -> None:
@@ -731,7 +731,7 @@ class Player:
         filters
             The filter to set the player with.
         """
-        logger.debug("Updated filters in guild {}", self.guild_id)
+        logger.trace("Updated filters in guild {}", self.guild_id)
         await self._update_player(filters=filters)
 
     def set_loop(self, enable: bool | None = None) -> bool:
@@ -771,7 +771,7 @@ class Player:
         Player
             The new player.
         """
-        logger.debug(
+        logger.trace(
             "Transfer player in {} from session ({}) to session ({})",
             self.guild_id,
             self.session.name,
@@ -800,7 +800,7 @@ class Player:
         voice: hikari.UndefinedOr[Voice] = hikari.UNDEFINED,
         no_replace: bool = True,
     ) -> None:
-        logger.debug(
+        logger.trace(
             "Updating player for channel: {} in guild: {}",
             self.channel_id,
             self.guild_id,
@@ -821,7 +821,7 @@ class Player:
             session=self.session,
         )
 
-        logger.debug("New player {}", player)
+        logger.trace("New player {}", player)
         self._volume = player.volume
         self._is_paused = player.is_paused
         self._state = player.state
@@ -841,14 +841,14 @@ class Player:
         ):
             return
 
-        logger.debug(
+        logger.trace(
             "Auto-playing track for channel: {} in guild: {}",
             self.channel_id,
             self.guild_id,
         )
 
         if len(self.queue) == 0:
-            logger.debug(
+            logger.trace(
                 "queue is empty for channel: {} in guild: {}. Skipping.",
                 self.channel_id,
                 self.guild_id,
@@ -856,7 +856,7 @@ class Player:
             return
 
         if len(self.queue) == 1 and not self.loop:
-            logger.debug(
+            logger.trace(
                 "queue is empty for channel: {} in guild: {}. Dispatching last known track.",
                 self.channel_id,
                 self.guild_id,
@@ -873,14 +873,14 @@ class Player:
             return
 
         if not self.loop:
-            logger.debug(
+            logger.trace(
                 "Autoplay for channel: {} in guild: {}. Removing old song.",
                 self.channel_id,
                 self.guild_id,
             )
             self.remove(0)
 
-        logger.debug(
+        logger.trace(
             "Auto-playing next track for channel: {} in guild: {}. Track title: {}",
             self.channel_id,
             self.guild_id,
@@ -903,7 +903,7 @@ class Player:
     ) -> None:
         if event.guild_id != self.guild_id:
             return
-        logger.debug("Updating player state in {}", self.guild_id)
+        logger.trace("Updating player state in {}", self.guild_id)
 
         if not event.state.connected and self.connected:
             await self.stop()

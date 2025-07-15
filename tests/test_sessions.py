@@ -568,14 +568,11 @@ class TestRequest:
             assert response is None
 
             # Test extra params
-
             response = await session.request(
                 "GET", "/params", None, params=test_dict
             )
 
             params = dict(test_dict)
-
-            params.update({})
 
             patched_request.assert_called_with(
                 "GET",
@@ -753,8 +750,7 @@ class TestHandleOPCode:
         )
 
         payload = dict(payloads.STATISTICS_PAYLOAD)
-
-        payload.update({"op": "stats"})
+        payload["op"] = "stats"
 
         event = session._handle_op_code(orjson.dumps(payload).decode())
 

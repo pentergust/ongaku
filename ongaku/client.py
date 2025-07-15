@@ -188,11 +188,11 @@ class Client:
         return self._client_session
 
     async def _start_event(self, event: hikari.StartedEvent) -> None:
-        logger.debug("Starting up ongaku.")
+        logger.trace("Starting up ongaku.")
         await self.session_handler.start()
 
     async def _stop_event(self, event: hikari.StoppingEvent) -> None:
-        logger.debug("Shutting down ongaku.")
+        logger.trace("Shutting down ongaku.")
         await self.session_handler.stop()
 
         if self._client_session is not None and not self._client_session.closed:
@@ -201,16 +201,16 @@ class Client:
     async def _arc_player_injector(
         self, ctx: arc.GatewayContext, inj_ctx: arc.InjectorOverridingContext
     ) -> None:
-        logger.debug("Attempting to inject player.")
+        logger.trace("Attempting to inject player.")
 
         if ctx.guild_id is None:
-            logger.debug("Player ignored, not in guild.")
+            logger.trace("Player ignored, not in guild.")
             return
 
         try:
             player = self.fetch_player(ctx.guild_id)
         except errors.PlayerMissingError:
-            logger.debug("Player not found for context.")
+            logger.trace("Player not found for context.")
             return
 
         inj_ctx.set_type_dependency(Player, player)

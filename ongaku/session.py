@@ -244,7 +244,7 @@ class Session:
             new_headers.update(self.auth_headers)
 
         new_params: typing.MutableMapping[str, typing.Any] = dict(params)
-        logger.debug(
+        logger.trace(
             "Making request to {}{}{} with headers: {} and json: {} and params: {}",
             self.base_uri,
             "/v4" if version else "",
@@ -409,7 +409,7 @@ class Session:
         return bot
 
     async def _websocket(self) -> None:
-        logger.debug("Start websocket connection to session {}", self.name)
+        logger.trace("Start websocket connection to session {}", self.name)
         bot = self._get_bot()
         self._websocket_headers = {
             "User-Id": str(int(bot.id)),
@@ -430,7 +430,7 @@ class Session:
                     headers=new_headers,
                     autoclose=False,
                 ) as ws:
-                    logger.debug("Connected to session {}", self.name)
+                    logger.trace("Connected to session {}", self.name)
                     self._status = SessionStatus.CONNECTED
                     async for msg in ws:
                         if not self._handle_ws_message(msg):
@@ -463,7 +463,7 @@ class Session:
             The session handler, that will allow this session to move its players too.
         """
         session = session_handler.fetch_session()
-        logger.debug("Transfer players from {} to {}", self.name, session.name)
+        logger.trace("Transfer players from {} to {}", self.name, session.name)
         for player in self._players.values():
             player = await player.transfer(session)
             session_handler.add_player(player)
@@ -474,7 +474,7 @@ class Session:
 
         Starts up the session, to receive events.
         """
-        logger.debug("Starting up session {}", self.name)
+        logger.trace("Starting up session {}", self.name)
         self._session_task = asyncio.create_task(self._websocket())
 
     async def stop(self) -> None:
@@ -482,7 +482,7 @@ class Session:
 
         Stops the current session, if it is running.
         """
-        logger.debug("Shutting down session {}", self.name)
+        logger.trace("Shutting down session {}", self.name)
         if self._session_task is None:
             return
 
