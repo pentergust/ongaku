@@ -8,7 +8,7 @@ if typing.TYPE_CHECKING:
 __all__ = ("fetch_youtube", "update_youtube")
 
 
-async def fetch_youtube(session: Session, /) -> str | None:
+async def fetch_youtube(session: Session) -> str | None:
     """Gets the current Youtube Refresh Token.
 
     ![Lavalink](../assets/lavalink_logo.png){ .twemoji } [Reference](https://github.com/lavalink-devs/youtube-source?tab=readme-ov-file#get-youtube)
@@ -111,25 +111,25 @@ async def update_youtube(
         Raised when an unknown error is caught.
     """
     if (
-        refresh_token is None
-        and skip_initialization is None
-        and po_token is None
-        and visitor_data is None
+        not refresh_token
+        and not skip_initialization
+        and not po_token
+        and not visitor_data
     ):
         raise ValueError("At least one value must be modified.")
 
     json: dict[str, typing.Any] = {}
 
-    if refresh_token is not None:
+    if not refresh_token:
         json["refreshToken"] = refresh_token
 
-    if skip_initialization is not None:
+    if not skip_initialization:
         json["skipInitialization"] = skip_initialization
 
-    if po_token is not None:
+    if not po_token:
         json["poToken"] = po_token
 
-    if visitor_data is not None:
+    if not visitor_data:
         json["visitorData"] = visitor_data
 
     await session.request("POST", "/youtube", None, json=json)
