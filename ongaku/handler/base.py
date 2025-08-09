@@ -51,6 +51,23 @@ class SessionHandler(BaseSessionHandler):
         """Whether the handler is alive or not."""
         return self._is_alive
 
+    @property
+    def current_session(self) -> Session:
+        """Returns the first connected sessions.
+
+        Raises:
+            NoSessionError: If there are no connected sessions.
+        """
+        if self._current_session is not None:
+            return self._current_session
+
+        for session in self.sessions:
+            if session.status == SessionStatus.CONNECTED:
+                self._current_session = session
+                return session
+
+        raise errors.NoSessionsError
+
     async def start(self) -> None:
         self._is_alive = True
         for _, session in self._sessions.items():
@@ -78,21 +95,13 @@ class SessionHandler(BaseSessionHandler):
         return session
 
     def fetch_session(self, name: str | None = None) -> Session:
-        if name is not None:
-            try:
-                return self._sessions[name]
-            except KeyError as e:
-                raise errors.SessionMissingError from e
+        if name is None:
+            return self.current_session
 
-        if self._current_session is not None:
-            return self._current_session
-
-        for session in self.sessions:
-            if session.status == SessionStatus.CONNECTED:
-                self._current_session = session
-                return session
-
-        raise errors.NoSessionsError
+        try:
+            return self._sessions[name]
+        except KeyError as e:
+            raise errors.SessionMissingError from e
 
     async def delete_session(self, name: str) -> None:
         try:
