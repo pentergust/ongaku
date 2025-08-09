@@ -1,11 +1,3 @@
-# ruff: noqa: D100, D101, D102, D103
-
-
-# ╔═════════════╗
-# ║ Arc example ║
-# ╚═════════════╝
-from __future__ import annotations
-
 import logging
 
 import arc
@@ -16,11 +8,9 @@ from ongaku.ext import checker
 from ongaku.ext import injection
 
 bot = hikari.GatewayBot("...")
-
 client = arc.GatewayClient(bot)
 
 ongaku_client = ongaku.Client.from_arc(client)
-
 ongaku_client.create_session(
     name="arc-session",
     host="127.0.0.1",
@@ -136,12 +126,10 @@ async def play_command(
         )
         return
 
-    checked_query = await checker.check(query)
-
-    if checked_query.type == checker.CheckedType.QUERY:
-        result = await ongaku_client.rest.load_track(f"ytsearch:{checked_query.value}")
+    if checker.check(query):
+        result = await ongaku_client.rest.load_track(query)
     else:
-        result = await ongaku_client.rest.load_track(checked_query.value)
+        result = await ongaku_client.rest.load_track(f"ytsearch:{query}")
 
     if result is None:
         await ctx.respond(
@@ -193,14 +181,10 @@ async def add_command(
     query: arc.Option[str, arc.StrParams("The song you wish to add.")],
     player: ongaku.Player = arc.inject(),
 ) -> None:
-    checked_query = await checker.check(query)
-
-    if checked_query.type == checker.CheckedType.QUERY:
-        result = await player.session.client.rest.load_track(
-            f"ytsearch:{checked_query.value}",
-        )
+    if checker.check(query):
+        result = await ongaku_client.rest.load_track(query)
     else:
-        result = await player.session.client.rest.load_track(checked_query.value)
+        result = await ongaku_client.rest.load_track(f"ytsearch:{query}")
 
     if result is None:
         await ctx.respond(
@@ -330,7 +314,6 @@ async def stop_command(
     player: ongaku.Player = arc.inject(),
 ) -> None:
     await player.disconnect()
-
     await ctx.respond("Successfully stopped the player.")
 
 

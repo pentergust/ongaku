@@ -1,11 +1,3 @@
-# ruff: noqa: D100, D101, D102, D103
-
-
-# ╔════════════════╗
-# ║ Tanjun example ║
-# ╚════════════════╝
-from __future__ import annotations
-
 import logging
 
 import hikari
@@ -15,11 +7,8 @@ import ongaku
 from ongaku.ext import checker
 
 bot = hikari.GatewayBot("...")
-
 client = tanjun.Client.from_gateway_bot(bot)
-
 ongaku_client = ongaku.Client.from_tanjun(client)
-
 ongaku_client.create_session(
     name="tanjun-session",
     host="127.0.0.1",
@@ -117,12 +106,10 @@ async def play_command(
         )
         return
 
-    checked_query = await checker.check(query)
-
-    if checked_query.type == checker.CheckedType.QUERY:
-        result = await ongaku_client.rest.load_track(f"ytsearch:{checked_query.value}")
+    if checker.check(query):
+        result = await ongaku_client.rest.load_track(query)
     else:
-        result = await ongaku_client.rest.load_track(checked_query.value)
+        result = await ongaku_client.rest.load_track(f"ytsearch:{query}")
 
     if result is None:
         await ctx.create_initial_response(
@@ -190,12 +177,10 @@ async def add_command(
         )
         return
 
-    checked_query = await checker.check(query)
-
-    if checked_query.type == checker.CheckedType.QUERY:
-        result = await ongaku_client.rest.load_track(f"ytsearch:{checked_query.value}")
+    if checker.check(query):
+        result = await ongaku_client.rest.load_track(query)
     else:
-        result = await ongaku_client.rest.load_track(checked_query.value)
+        result = await ongaku_client.rest.load_track(f"ytsearch:{query}")
 
     if result is None:
         await ctx.create_initial_response(

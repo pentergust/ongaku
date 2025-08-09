@@ -1,8 +1,3 @@
-# ╔════════════════╗
-# ║ Hikari example ║
-# ╚════════════════╝
-from __future__ import annotations
-
 import logging
 
 import hikari
@@ -17,7 +12,6 @@ bot = hikari.GatewayBot(
 )
 
 ongaku_client = ongaku.Client(bot)
-
 ongaku_client.create_session(
     name="hikari-session",
     host="127.0.0.1",
@@ -120,12 +114,10 @@ async def play_command(event: hikari.GuildMessageCreateEvent) -> None:
         )
         return
 
-    checked_query = await checker.check(args[0])
-
-    if checked_query.type == checker.CheckedType.QUERY:
-        result = await ongaku_client.rest.load_track(f"ytsearch:{checked_query.value}")
+    if checker.check(args[0]):
+        result = await ongaku_client.rest.load_track(args[0])
     else:
-        result = await ongaku_client.rest.load_track(checked_query.value)
+        result = await ongaku_client.rest.load_track(f"ytsearch:{args[0]}")
 
     if result is None:
         await bot.rest.create_message(
@@ -194,12 +186,10 @@ async def add_command(event: hikari.GuildMessageCreateEvent) -> None:
         )
         return
 
-    checked_query = await checker.check(args[0])
-
-    if checked_query.type == checker.CheckedType.QUERY:
-        result = await ongaku_client.rest.load_track(f"ytsearch:{checked_query.value}")
+    if checker.check(args[0]):
+        result = await ongaku_client.rest.load_track(args[0])
     else:
-        result = await ongaku_client.rest.load_track(checked_query.value)
+        result = await ongaku_client.rest.load_track(f"ytsearch:{args[0]}")
 
     if result is None:
         await bot.rest.create_message(

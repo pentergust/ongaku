@@ -9,8 +9,7 @@ from ongaku.ext import youtube as yt
 from ongaku.rest import RESTClient
 
 if TYPE_CHECKING:
-    from ongaku import Client
-    from ongaku import Session
+    from ongaku import Client, Session
 
 
 @pytest.mark.asyncio
