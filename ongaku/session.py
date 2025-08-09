@@ -13,13 +13,10 @@ import hikari
 import orjson
 from loguru import logger
 
-from ongaku import errors
-from ongaku import events
+from ongaku import errors, events
 from ongaku.__metadata__ import __version__
 from ongaku.impl.player import State
-from ongaku.impl.session import SessionStatus
-from ongaku.impl.session import WebsocketEvent
-from ongaku.impl.session import WebsocketOPCode
+from ongaku.impl.session import SessionStatus, WebsocketEvent, WebsocketOPCode
 from ongaku.impl.statistics import Statistics
 from ongaku.impl.track import Track
 
