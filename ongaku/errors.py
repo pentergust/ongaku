@@ -1,7 +1,4 @@
-"""Errors.
-
-All of the ongaku errors.
-"""
+"""All of the ongaku errors."""
 
 import abc
 import datetime

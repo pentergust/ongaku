@@ -120,22 +120,14 @@ nav:
     - Errors: api/errors.md
     - Builders: api/builders.md
     - Types: api/types.md
-    - ABC:
-      - Errors: api/abc/errors.md
-      - Events: api/abc/events.md
-      - Filters: api/abc/filters.md
-      - Handler: api/abc/handler.md
-      - Info: api/abc/info.md
-      - Player: api/abc/player.md
-      - Playlist: api/abc/playlist.md
-      - Route Planner: api/abc/routeplanner.md
-      - Session: api/abc/session.md
-      - Statistics: api/abc/statistics.md
-      - Track: api/abc/track.md
+    - Handler:
+      - Abc: api/handler/abc.md
+      - Base: api/handler/base.md
     - Impl:
       - Filters: api/impl/filters.md
       - Handlers: api/impl/handlers.md
       - Info: api/impl/info.md
+      - Payload: api/impl/payload.md
       - Player: api/impl/player.md
       - Playlist: api/impl/playlist.md
       - Route Planner: api/impl/routeplanner.md
@@ -149,7 +141,6 @@ nav:
     - Injection: ext/injection.md
     - Youtube: ext/youtube.md
   - Changelog: changelog.md
-
 
 watch:
   - docs

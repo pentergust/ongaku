@@ -1,6 +1,6 @@
 """Client.
 
-The base client for ongaku.
+The base client for ongaku sessions and players.
 """
 
 from __future__ import annotations

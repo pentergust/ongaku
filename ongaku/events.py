@@ -1,6 +1,6 @@
-"""Error Impl's.
+"""Events Impl's.
 
-The error implemented classes.
+The events implemented classes.
 """
 
 from __future__ import annotations
@@ -11,16 +11,13 @@ from dataclasses import dataclass
 
 import hikari
 
-from ongaku.errors import ExceptionError
-from ongaku.errors import SeverityType
+from ongaku.errors import ExceptionError, SeverityType
 from ongaku.impl.payload import PayloadObject
 
 if typing.TYPE_CHECKING:
     from ongaku.client import Client
     from ongaku.impl.player import State
-    from ongaku.impl.statistics import Cpu
-    from ongaku.impl.statistics import FrameStatistics
-    from ongaku.impl.statistics import Memory
+    from ongaku.impl.statistics import Cpu, FrameStatistics, Memory
     from ongaku.impl.track import Track
     from ongaku.session import Session
 

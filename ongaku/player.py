@@ -4,14 +4,12 @@ from __future__ import annotations
 
 import random
 import typing
-from asyncio import TimeoutError
-from asyncio import gather
+from asyncio import TimeoutError, gather
 
 import hikari
 from loguru import logger
 
-from ongaku import errors
-from ongaku import events
+from ongaku import errors, events
 from ongaku.events import TrackEndReasonType
 from ongaku.impl.player import Voice
 from ongaku.impl.playlist import Playlist

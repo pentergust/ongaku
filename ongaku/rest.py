@@ -10,8 +10,7 @@ import typing
 import hikari
 from loguru import logger
 
-from ongaku import errors
-from ongaku import routes
+from ongaku import errors, routes
 from ongaku.impl.info import Info
 from ongaku.impl.player import Player
 from ongaku.impl.playlist import Playlist

@@ -101,6 +101,8 @@ class Track(PayloadObject):
     plugin_info: typing.Mapping[str, typing.Any]
     """Additional track info provided by plugins."""
 
+    # TODO: Add setter for custom data
+    # From: https://github.com/hikari-ongaku/ongaku/commit/6b2e1576626bd2d32072af7e5fadc3c2fd1233dd
     user_data: typing.Mapping[str, typing.Any]
     """Additional track data.
 

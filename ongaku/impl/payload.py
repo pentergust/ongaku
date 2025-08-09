@@ -1,8 +1,7 @@
-"""Payload objects."""
+"""Payload object impl."""
 
 import typing
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from venv import logger
 
 import orjson
@@ -32,7 +31,7 @@ def _ensure_mapping(
 
 
 class PayloadObject(ABC):
-    """Object can build from payload."""
+    """Object can build from API payload."""
 
     @classmethod
     @abstractmethod
