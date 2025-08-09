@@ -64,13 +64,14 @@ class SessionHandler(BaseSessionHandler):
         self._players.clear()
         self._is_alive = False
 
+    # Manage sessions
+    # ===============
+
     def add_session(self, session: Session) -> Session:
-        """Add a session."""
-        exist_session = self._sessions.get(session.name)
-        if exist_session is not None:
+        if self._sessions.get(session.name) is not None:
             raise errors.UniqueError(f"The name {session.name} is not unique.")
 
-        if self.is_alive:
+        if not self.is_alive:
             asyncio.create_task(session.start())  # noqa: RUF006
 
         self._sessions[session.name] = session
@@ -100,6 +101,9 @@ class SessionHandler(BaseSessionHandler):
             raise errors.SessionMissingError from e
 
         await session.stop()
+
+    # Manage players
+    # ==============
 
     def add_player(self, player: Player) -> Player:
         if self._players.get(player.guild_id, None) is not None:
