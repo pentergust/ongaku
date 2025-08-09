@@ -11,13 +11,12 @@ from loguru import logger
 
 from ongaku import errors, events
 from ongaku.events import TrackEndReasonType
-from ongaku.impl.player import Voice
+from ongaku.impl import player
 from ongaku.impl.playlist import Playlist
 from ongaku.impl.track import Track
 
 if typing.TYPE_CHECKING:
     from ongaku.impl.filters import Filters
-    from ongaku.impl.player import State
     from ongaku.session import Session
 
 
@@ -43,7 +42,7 @@ RequestorT: typing.TypeAlias = (
 """The types to set for a requestor of a track.s"""
 
 
-class Player:
+class Player(player.Player):
     """The class that allows the player, to play songs, and more.
 
     Parameters
@@ -54,14 +53,11 @@ class Player:
         The Guild the bot is attached too.
     """
 
-    __slots__: typing.Sequence[str] = (
+    __slots__ = (
         "_autoplay",
         "_channel_id",
         "_connected",
-        "_filters",
-        "_guild_id",
         "_is_alive",
-        "_is_paused",
         "_loop",
         "_position",
         "_queue",
@@ -69,7 +65,6 @@ class Player:
         "_session_id",
         "_state",
         "_voice",
-        "_volume",
     )
 
     def __init__(
@@ -80,8 +75,8 @@ class Player:
         self._channel_id: hikari.Snowflake | None = None
         self._is_alive = False
         self._is_paused = True
-        self._voice: Voice | None = None
-        self._state: State | None = None
+        self._voice: player.Voice = player.Voice.empty()
+        self._state: player.State = player.State.empty()
         self._queue: typing.MutableSequence[Track] = []
         self._filters: Filters | None = None
         self._connected: bool = False
@@ -90,6 +85,7 @@ class Player:
         self._autoplay: bool = True
         self._position: int = 0
         self._loop = False
+        self._track = None
 
         self.app.event_manager.subscribe(
             events.TrackEndEvent, self._track_end_event
@@ -132,19 +128,6 @@ class Player:
         return self._position
 
     @property
-    def volume(self) -> int:
-        """The volume of the player.
-
-        If `-1` the player has not been connected to lavalink and updated.
-        """
-        return self._volume
-
-    @property
-    def is_paused(self) -> bool:
-        """Whether the player is currently paused."""
-        return self._is_paused
-
-    @property
     def autoplay(self) -> bool:
         """Whether or not the next song will play, when this song ends."""
         return self._autoplay
@@ -165,13 +148,11 @@ class Player:
         return self._queue
 
     @property
-    def voice(self) -> Voice | None:
-        """The player's voice state."""
+    def voice(self) -> player.Voice:
         return self._voice
 
     @property
-    def state(self) -> State | None:
-        """The player's player state."""
+    def state(self) -> player.State:
         return self._state
 
     @property
@@ -261,7 +242,7 @@ class Player:
             self.guild_id,
         )
 
-        new_voice = Voice(
+        new_voice = player.Voice(
             token=server_event.token,
             endpoint=server_event.raw_endpoint,
             session_id=state_event.state.session_id,
@@ -795,7 +776,7 @@ class Player:
         volume: hikari.UndefinedOr[int] = hikari.UNDEFINED,
         paused: hikari.UndefinedOr[bool] = hikari.UNDEFINED,
         filters: hikari.UndefinedNoneOr[Filters] = hikari.UNDEFINED,
-        voice: hikari.UndefinedOr[Voice] = hikari.UNDEFINED,
+        voice: hikari.UndefinedOr[player.Voice] = hikari.UNDEFINED,
         no_replace: bool = True,
     ) -> None:
         logger.trace(
@@ -826,6 +807,7 @@ class Player:
         self._voice = player.voice
         self._filters = player.filters
         self._connected = player.state.connected
+        self._track = player.track
 
     async def _track_end_event(self, event: events.TrackEndEvent) -> None:
         self.session._get_session_id()

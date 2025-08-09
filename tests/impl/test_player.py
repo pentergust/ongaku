@@ -5,9 +5,7 @@ from typing import TYPE_CHECKING
 
 from hikari.snowflakes import Snowflake
 
-from ongaku.impl.player import Player
-from ongaku.impl.player import State
-from ongaku.impl.player import Voice
+from ongaku.impl.player import Player, State, Voice
 
 if TYPE_CHECKING:
     from ongaku.impl.filters import Filters
@@ -47,9 +45,26 @@ def test_player_state():
     assert player_state.ping == 3
 
 
+def test_player_state_from_empty():
+    player_state = State.empty()
+
+    assert player_state.time == datetime.datetime.fromtimestamp(0)
+    assert player_state.position == 0
+    assert player_state.connected is False
+    assert player_state.ping == -1
+
+
 def test_player_voice():
     player_voice = Voice("token", "endpoint", "session_id")
 
     assert player_voice.token == "token"
     assert player_voice.endpoint == "endpoint"
     assert player_voice.session_id == "session_id"
+
+
+def test_player_voice_from_empty():
+    player_voice = Voice.empty()
+
+    assert player_voice.token == ""
+    assert player_voice.endpoint == ""
+    assert player_voice.session_id == ""

@@ -5,18 +5,18 @@ import typing
 from unittest import mock
 
 import pytest
-from hikari.events.voice_events import VoiceServerUpdateEvent
-from hikari.events.voice_events import VoiceStateUpdateEvent
+from hikari.events.voice_events import (
+    VoiceServerUpdateEvent,
+    VoiceStateUpdateEvent,
+)
 from hikari.snowflakes import Snowflake
 
-from ongaku import errors
-from ongaku import events
+from ongaku import errors, events
 from ongaku.events import TrackEndReasonType
 from ongaku.impl import player as player_
 from ongaku.impl import playlist
-from ongaku.impl.player import Voice
-from ongaku.impl.track import Track
-from ongaku.impl.track import TrackInfo
+from ongaku.impl.player import State, Voice
+from ongaku.impl.track import Track, TrackInfo
 from ongaku.player import Player
 from ongaku.session import Session
 
@@ -59,6 +59,7 @@ class TestPlayer:
         assert new_player.session == ongaku_session
         assert new_player.app == gateway_bot
         assert new_player.guild_id == Snowflake(1234567890)
+        assert new_player.track is None
         assert new_player.channel_id is None
         assert new_player.is_alive is False
         assert new_player.position == 0
@@ -68,8 +69,8 @@ class TestPlayer:
         assert new_player.connected is False
         assert isinstance(new_player.queue, typing.Sequence)
         assert new_player.queue == []
-        assert new_player.voice is None
-        assert new_player.state is None
+        assert new_player.voice == Voice.empty()
+        assert new_player.state == State.empty()
         assert new_player.filters is None
 
     @pytest.mark.asyncio
@@ -924,7 +925,7 @@ class TestPlayer:
     async def test_player_update_event(self, ongaku_session: Session):
         new_player = Player(ongaku_session, Snowflake(1234567890))
 
-        assert new_player.state is None
+        assert new_player.state == State.empty()
         assert new_player.connected is False
 
         state = player_.State(datetime.datetime.now(), 1, True, 2)

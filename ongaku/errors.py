@@ -20,6 +20,7 @@ __all__ = (
     "PlayerConnectError",
     "PlayerError",
     "PlayerMissingError",
+    "PlayerNotConnectedError",
     "PlayerQueueError",
     "RestEmptyError",
     "RestError",
@@ -269,6 +270,10 @@ class PlayerQueueError(PlayerError):
 
 class PlayerMissingError(PlayerError):
     """Raised when the player could not be found."""
+
+
+class PlayerNotConnectedError(PlayerError):
+    """Raised when the player is not connected to a voice channel."""
 
 
 # Others:

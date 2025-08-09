@@ -16,7 +16,7 @@ from ongaku.impl.track import Track
 __all__ = ("Player", "State", "Voice")
 
 
-@dataclass(order=True, frozen=True, slots=True)
+@dataclass(order=True, slots=True)
 class State(PayloadObject):
     """Players State.
 
@@ -58,8 +58,12 @@ class State(PayloadObject):
             payload["ping"],
         )
 
+    @classmethod
+    def empty(cls) -> "State":
+        return State(datetime.datetime.fromtimestamp(0), 0, False, 1)
 
-@dataclass(order=True, frozen=True, slots=True)
+
+@dataclass(order=True, slots=True)
 class Voice(PayloadObject):
     """Players Voice state.
 
@@ -92,8 +96,13 @@ class Voice(PayloadObject):
             payload["token"], payload["endpoint"], payload["sessionId"]
         )
 
+    @classmethod
+    def empty(cls) -> "Voice":
+        return Voice("", "", "")
 
-@dataclass(order=True, frozen=True, slots=True)
+
+# TODO: Return frozen or ...
+# From: https://github.com/hikari-ongaku/ongaku/commit/a5431c3a7e5283e7d7179aabcbb6af87b5f1f55a
 class Player(PayloadObject):
     """Player information.
 
@@ -102,30 +111,75 @@ class Player(PayloadObject):
     ![Lavalink](../../assets/lavalink_logo.png){ .twemoji } [Reference](https://lavalink.dev/api/rest.html#player)
     """
 
-    guild_id: hikari.Snowflake
-    """The guild id this player is attached too."""
+    __slots__ = (
+        "_guild_id",
+        "_track",
+        "_volume",
+        "_is_paused",
+        "_state",
+        "_voice",
+        "_filters",
+    )
 
-    track: Track | None
-    """The track the player is currently playing.
+    def __init__(
+        self,
+        guild_id: hikari.Snowflake,
+        track: Track | None,
+        volume: int,
+        is_paused: bool,
+        state: State,
+        voice: Voice,
+        filters: Filters | None,
+    ) -> None:
+        self._guild_id = guild_id
+        self._track = track
+        self._volume = volume
+        self._is_paused = is_paused
+        self._state = state
+        self._voice = voice
+        self._filters = filters
 
-    !!! note
-        If the track is `None` then there is no current track playing.
-    """
+    @property
+    def guild_id(self) -> hikari.Snowflake:
+        """The guild id this player is attached too."""
+        return self._guild_id
 
-    volume: int
-    """The volume of the player."""
+    @property
+    def track(self) -> Track | None:
+        """The track the player is currently playing.
 
-    is_paused: bool
-    """Whether the player is paused."""
+        !!! note
+            If the track is `None` then there is no current track playing.
+        """
+        return self._track
 
-    state: State
-    """The player's state."""
+    @property
+    def volume(self) -> int:
+        """The volume of the player.
 
-    voice: Voice
-    """The player's voice state."""
+        If `-1` the player has not been connected to lavalink and updated.
+        """
+        return self._volume
 
-    filters: Filters | None
-    """The filter object."""
+    @property
+    def is_paused(self) -> bool:
+        """Whether the player is paused."""
+        return self._is_paused
+
+    @property
+    def state(self) -> State:
+        """The player's state."""
+        return self._state
+
+    @property
+    def voice(self) -> Voice:
+        """The player's voice state."""
+        return self._voice
+
+    @property
+    def filters(self) -> Filters | None:
+        """The filter object."""
+        return self._filters
 
     @classmethod
     def _from_payload(
